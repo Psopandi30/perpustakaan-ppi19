@@ -14,7 +14,7 @@ const App: React.FC = () => {
     adminPhoto: ''
   });
 
-  // Load settings on mount
+  // Load settings and restore login session on mount
   useEffect(() => {
     const loadSettings = async () => {
       try {
@@ -27,6 +27,22 @@ const App: React.FC = () => {
       }
     };
     loadSettings();
+
+    // Restore login session from localStorage
+    const savedSession = localStorage.getItem('literasi_session');
+    if (savedSession) {
+      try {
+        const session = JSON.parse(savedSession);
+        if (session.type === 'admin') {
+          setLoggedInUser('admin');
+        } else if (session.type === 'user' && session.user) {
+          setLoggedInUser(session.user);
+        }
+      } catch (error) {
+        console.error("Failed to restore session:", error);
+        localStorage.removeItem('literasi_session');
+      }
+    }
   }, []);
 
   const handleLogin = useCallback(async (username: string, pass: string): Promise<boolean> => {
@@ -35,6 +51,8 @@ const App: React.FC = () => {
       // We use the settings loaded from DB (or initial state)
       if (pass === settings.adminPassword) {
         setLoggedInUser('admin');
+        // Save admin session to localStorage
+        localStorage.setItem('literasi_session', JSON.stringify({ type: 'admin' }));
         return true;
       }
       return false;
@@ -46,6 +64,8 @@ const App: React.FC = () => {
       const user = users.find(u => u.username === username && u.password === pass);
       if (user && user.akunStatus === 'Aktif') {
         setLoggedInUser(user);
+        // Save user session to localStorage
+        localStorage.setItem('literasi_session', JSON.stringify({ type: 'user', user }));
         return true;
       }
     } catch (error) {
@@ -56,6 +76,8 @@ const App: React.FC = () => {
 
   const handleLogout = useCallback(() => {
     setLoggedInUser(null);
+    // Clear session from localStorage
+    localStorage.removeItem('literasi_session');
   }, []);
 
   const handleRegister = async (newUser: Omit<User, 'id' | 'akunStatus'>) => {

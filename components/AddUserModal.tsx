@@ -36,15 +36,6 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
     onSave(formData);
   };
 
-  const formFields = [
-    { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text' },
-    { name: 'status', label: 'Status', type: 'text' },
-    { name: 'alamat', label: 'Alamat', type: 'text' },
-    { name: 'telepon', label: 'Telepon', type: 'text' },
-    { name: 'username', label: 'Username', type: 'text' },
-    { name: 'password', label: 'Password', type: 'password' },
-  ];
-
   return (
     <div
       className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4"
@@ -59,24 +50,98 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {formFields.map(field => (
-            <div key={field.name}>
-              <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
-                {field.label}
-              </label>
-              <input
-                type={field.type}
-                id={field.name}
-                name={field.name}
-                value={formData[field.name as keyof typeof formData]}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
-              />
-            </div>
-          ))}
+          <div>
+            <label htmlFor="namaLengkap" className="block text-sm font-medium text-gray-700 mb-1">
+              Nama Lengkap
+            </label>
+            <input
+              type="text"
+              id="namaLengkap"
+              name="namaLengkap"
+              value={formData.namaLengkap}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              id="status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            >
+              <option value="">Pilih Status</option>
+              <option value="Mahasiswa">Mahasiswa</option>
+              <option value="Dosen/Pengajar">Dosen/Pengajar</option>
+              <option value="Staf">Staf</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="alamat" className="block text-sm font-medium text-gray-700 mb-1">
+              Alamat
+            </label>
+            <input
+              type="text"
+              id="alamat"
+              name="alamat"
+              value={formData.alamat}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="telepon" className="block text-sm font-medium text-gray-700 mb-1">
+              Nomor WhatsApp
+            </label>
+            <input
+              type="text"
+              id="telepon"
+              name="telepon"
+              value={formData.telepon}
+              onChange={handleChange}
+              placeholder="08xxxxxxxxxx"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              Username/NIM/NID/NIDN
+            </label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
           <div>
             <label htmlFor="akunStatus" className="block text-sm font-medium text-gray-700 mb-1">
-              Setatus Akun
+              Status Akun
             </label>
             <select
               id="akunStatus"
@@ -112,8 +177,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 
