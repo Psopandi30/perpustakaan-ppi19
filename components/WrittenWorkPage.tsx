@@ -6,41 +6,63 @@ import EditWrittenWorkModal from './EditWrittenWorkModal';
 import AddWrittenWorkModal from './AddWrittenWorkModal';
 import * as db from '../db';
 
-interface WrittenWorkPageProps {
-    works: WrittenWork[];
-    setWorks: React.Dispatch<React.SetStateAction<WrittenWork[]>>;
-}
-
-const WrittenWorkPage: React.FC<WrittenWorkPageProps> = ({ works, setWorks }) => {
+const WrittenWorkPage: React.FC = () => {
+    const [works, setWorks] = useState<WrittenWork[]>([]);
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingWork, setEditingWork] = useState<WrittenWork | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const handleAddWork = (newWorkData: Omit<WrittenWork, 'id'>) => {
-        const newWork: WrittenWork = {
-            id: works.length > 0 ? Math.max(...works.map(w => w.id)) + 1 : 1,
-            ...newWorkData,
+    React.useEffect(() => {
+        const loadWorks = async () => {
+            setIsLoading(true);
+            const data = await db.fetchWrittenWorks();
+            setWorks(data);
+            setIsLoading(false);
         };
-        setWorks([...works, newWork]);
-        setIsAddModalOpen(false);
-        db.addNotification({
-            type: 'karya-tulis',
-            title: 'Jurnal Baru Tersedia!',
-            message: `Jurnal "${newWork.judul}" telah ditambahkan. Silakan baca sekarang!`,
-            timestamp: new Date(),
-            isRead: false,
-        });
-    };
+        loadWorks();
+    }, []);
 
-    const handleDelete = (id: number) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus jurnal ini?')) {
-            setWorks(works.filter(work => work.id !== id));
+    const handleAddWork = async (newWorkData: Omit<WrittenWork, 'id'>) => {
+        const addedWork = await db.addWrittenWork(newWorkData);
+        if (addedWork) {
+            setWorks([...works, addedWork]);
+            setIsAddModalOpen(false);
+            db.addNotification({
+                type: 'karya-tulis',
+                title: 'Jurnal Baru Tersedia!',
+                message: `Jurnal "${addedWork.judul}" telah ditambahkan. Silakan baca sekarang!`,
+                timestamp: new Date(),
+                isRead: false,
+            });
+        } else {
+            alert('Gagal menambahkan jurnal. Silakan coba lagi.');
         }
     };
 
-    const handleUpdateWork = (updatedWork: WrittenWork) => {
-        setWorks(works.map(w => w.id === updatedWork.id ? updatedWork : w));
-        setEditingWork(null);
+    const handleDelete = async (id: number) => {
+        if (window.confirm('Apakah Anda yakin ingin menghapus jurnal ini?')) {
+            const success = await db.deleteWrittenWork(id);
+            if (success) {
+                setWorks(works.filter(work => work.id !== id));
+            } else {
+                alert('Gagal menghapus jurnal.');
+            }
+        }
     };
+
+    const handleUpdateWork = async (updatedWork: WrittenWork) => {
+        const success = await db.updateWrittenWork(updatedWork);
+        if (success) {
+            setWorks(works.map(w => w.id === updatedWork.id ? updatedWork : w));
+            setEditingWork(null);
+        } else {
+            alert('Gagal mengupdate jurnal.');
+        }
+    };
+
+    if (isLoading) {
+        return <div className="p-6 text-center">Loading...</div>;
+    }
 
     return (
         <>
@@ -56,7 +78,7 @@ const WrittenWorkPage: React.FC<WrittenWorkPageProps> = ({ works, setWorks }) =>
                         onClick={() => setIsAddModalOpen(true)}
                         className="flex items-center bg-green-500 text-white font-bold py-2 px-4 rounded shadow hover:bg-green-600 transition-colors duration-300"
                     >
-                         <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-1">
                             <WritingIcon className="h-5 w-5" />
                             <PlusIcon className="h-4 w-4" />
                         </div>
@@ -82,41 +104,42 @@ const WrittenWorkPage: React.FC<WrittenWorkPageProps> = ({ works, setWorks }) =>
                                 {works.map((work, index) => {
                                     const coverUrl = resolveImageUrl(work.coverLink);
                                     return (
-                                    <tr key={work.id} className="hover:bg-gray-50">
-                                        <td className="px-4 py-3 text-gray-500">{index + 1}</td>
-                                        <td className="px-4 py-3 font-medium text-green-700">{work.judul}</td>
-                                        <td className="px-4 py-3 text-gray-500">{work.tanggalTerbit}</td>
-                                        <td className="px-4 py-3 text-gray-500">{work.namaPenulis}</td>
-                                        <td className="px-4 py-3">
-                                            {coverUrl ? (
-                                                <img src={coverUrl} alt={`Cover ${work.judul}`} className="h-16 w-12 object-cover rounded-md border" />
-                                            ) : (
-                                                <span className="text-gray-400 text-sm">Belum ada cover</span>
-                                            )}
-                                        </td>
-                                        <td className="px-4 py-3 text-blue-600 hover:underline">
-                                            <a href={work.drafLink} target="_blank" rel="noopener noreferrer">Link Buku Google Drive</a>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <div className="flex items-center space-x-2">
-                                                <button 
-                                                    onClick={() => setEditingWork(work)}
-                                                    className="text-black hover:text-gray-700" 
-                                                    title="Edit"
-                                                >
-                                                    <PencilIcon className="h-5 w-5" />
-                                                </button>
-                                                <button 
-                                                    onClick={() => handleDelete(work.id)}
-                                                    className="text-red-600 hover:text-red-800" 
-                                                    title="Delete"
-                                                >
-                                                    <TrashIcon className="h-5 w-5" />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                )})}
+                                        <tr key={work.id} className="hover:bg-gray-50">
+                                            <td className="px-4 py-3 text-gray-500">{index + 1}</td>
+                                            <td className="px-4 py-3 font-medium text-green-700">{work.judul}</td>
+                                            <td className="px-4 py-3 text-gray-500">{work.tanggalTerbit}</td>
+                                            <td className="px-4 py-3 text-gray-500">{work.namaPenulis}</td>
+                                            <td className="px-4 py-3">
+                                                {coverUrl ? (
+                                                    <img src={coverUrl} alt={`Cover ${work.judul}`} className="h-16 w-12 object-cover rounded-md border" />
+                                                ) : (
+                                                    <span className="text-gray-400 text-sm">Belum ada cover</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 text-blue-600 hover:underline">
+                                                <a href={work.drafLink} target="_blank" rel="noopener noreferrer">Link Buku Google Drive</a>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => setEditingWork(work)}
+                                                        className="text-black hover:text-gray-700"
+                                                        title="Edit"
+                                                    >
+                                                        <PencilIcon className="h-5 w-5" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(work.id)}
+                                                        className="text-red-600 hover:text-red-800"
+                                                        title="Delete"
+                                                    >
+                                                        <TrashIcon className="h-5 w-5" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                                 {works.length === 0 && (
                                     <tr>
                                         <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
