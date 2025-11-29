@@ -126,7 +126,7 @@ const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, o
                         </div>
                         <div className="text-right">
                             <p className="font-bold text-lg">Literasi Membaca</p>
-                            <p className="text-sm">PERSIS 19 GARUT</p>
+                            <p className="text-sm">IAI PERSIS GARUT</p>
                         </div>
                     </div>
                 </div>
