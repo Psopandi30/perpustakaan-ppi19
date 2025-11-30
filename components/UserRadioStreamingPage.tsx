@@ -29,7 +29,7 @@ const getYoutubeEmbedUrl = (url: string): string | null => {
     // Mute is often required for autoplay to work in modern browsers.
     // Adding the 'origin' parameter helps YouTube verify the embed request.
     const origin = window.location.origin;
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&origin=${encodeURIComponent(origin)}`;
+    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&origin=${encodeURIComponent(origin)}`;
 };
 
 
