@@ -66,9 +66,23 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
     };
 
     const handleSaveEdit = async (updatedData: RadioStreamData) => {
-        setRadioStreamData(updatedData);
-        await db.updateRadioStreamData(updatedData);
-        setIsEditModalOpen(false);
+        console.log('Saving data:', updatedData);
+        // Only send fields that exist in database, not messages
+        const dataToSave = {
+            title: updatedData.title,
+            youtubeLink: updatedData.youtubeLink,
+            whatsappLink: updatedData.whatsappLink,
+            isPublished: updatedData.isPublished
+        };
+        const success = await db.updateRadioStreamData(dataToSave);
+        console.log('Save result:', success);
+        if (success) {
+            setIsEditModalOpen(false);
+            // Reload data to reflect changes
+            await loadData();
+        } else {
+            alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+        }
     };
 
     const togglePublish = async () => {
