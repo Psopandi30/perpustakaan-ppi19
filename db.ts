@@ -204,7 +204,12 @@ export const updateRadioStreamData = async (data: Partial<RadioStreamData>): Pro
     if (data.whatsappLink !== undefined) dbData.whatsapp_link = data.whatsappLink;
     if (data.isPublished !== undefined) dbData.is_published = data.isPublished;
 
-    const { error } = await supabase.from('radio_stream_data').upsert(dbData);
+    // Use update instead of upsert to avoid RLS issues with insert permissions
+    // Since we know the row with ID 1 exists (from fetch), update is safe
+    const { error } = await supabase
+        .from('radio_stream_data')
+        .update(dbData)
+        .eq('id', 1);
     return !error;
 };
 
