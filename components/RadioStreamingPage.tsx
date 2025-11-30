@@ -114,18 +114,12 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
                 <table className="min-w-full bg-white text-sm">
                     <thead className="bg-gray-100 border-b-2 border-gray-300">
                         <tr>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Tema</th>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Nomor WhatsApp</th>
                             <th className="px-4 py-3 text-left font-semibold text-gray-600">Link Youtube</th>
                             <th className="px-4 py-3 w-32"></th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr>
-                            <td className="px-4 py-3 text-gray-700 font-medium">{radioStreamData.title}</td>
-                            <td className="px-4 py-3 text-green-600 truncate max-w-xs">
-                                <a href={radioStreamData.whatsappLink} target="_blank" rel="noopener noreferrer">{radioStreamData.whatsappLink}</a>
-                            </td>
                             <td className="px-4 py-3 text-red-600 truncate max-w-xs">
                                 <a href={radioStreamData.youtubeLink} target="_blank" rel="noopener noreferrer">{radioStreamData.youtubeLink}</a>
                             </td>

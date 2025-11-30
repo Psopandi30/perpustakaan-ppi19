@@ -25,8 +25,8 @@ const EditRadioStreamModal: React.FC<EditRadioStreamModalProps> = ({ data, onClo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title || !formData.whatsappLink || !formData.youtubeLink) {
-      setError('Semua kolom wajib diisi.');
+    if (!formData.youtubeLink) {
+      setError('Link Youtube wajib diisi.');
       return;
     }
     onSave(formData);
@@ -42,26 +42,6 @@ const EditRadioStreamModal: React.FC<EditRadioStreamModalProps> = ({ data, onClo
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tema</label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-dark-teal"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp</label>
-            <input
-              type="text"
-              name="whatsappLink"
-              value={formData.whatsappLink}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-dark-teal"
-            />
-          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Link Youtube</label>
             <input
