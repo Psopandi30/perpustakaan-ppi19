@@ -196,15 +196,15 @@ export const fetchRadioStreamData = async (): Promise<RadioStreamData> => {
 };
 
 export const updateRadioStreamData = async (data: Partial<RadioStreamData>): Promise<boolean> => {
-    // Assuming single row with ID 1 for simplicity, or we upsert
-    const dbData = {
-        id: 1,
-        title: data.title,
-        youtube_link: data.youtubeLink,
-        whatsapp_link: data.whatsappLink,
-        is_published: data.isPublished
-    };
-    const { error } = await supabase.from('radio_streams').upsert(dbData as any);
+    // Build update object with only defined fields
+    const dbData: any = { id: 1 };
+
+    if (data.title !== undefined) dbData.title = data.title;
+    if (data.youtubeLink !== undefined) dbData.youtube_link = data.youtubeLink;
+    if (data.whatsappLink !== undefined) dbData.whatsapp_link = data.whatsappLink;
+    if (data.isPublished !== undefined) dbData.is_published = data.isPublished;
+
+    const { error } = await supabase.from('radio_streams').upsert(dbData);
     return !error;
 };
 
