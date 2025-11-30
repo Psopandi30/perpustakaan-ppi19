@@ -187,6 +187,7 @@ export const fetchRadioStreamData = async (): Promise<RadioStreamData> => {
 
     const d = data as any;
     return {
+        id: d.id,
         title: d.title,
         youtubeLink: d.youtube_link,
         whatsappLink: d.whatsapp_link,
@@ -197,7 +198,7 @@ export const fetchRadioStreamData = async (): Promise<RadioStreamData> => {
 
 export const updateRadioStreamData = async (data: Partial<RadioStreamData>): Promise<boolean> => {
     // Build update object with only defined fields
-    const dbData: any = { id: 1 };
+    const dbData: any = {};
 
     if (data.title !== undefined) dbData.title = data.title;
     if (data.youtubeLink !== undefined) dbData.youtube_link = data.youtubeLink;
@@ -205,11 +206,13 @@ export const updateRadioStreamData = async (data: Partial<RadioStreamData>): Pro
     if (data.isPublished !== undefined) dbData.is_published = data.isPublished;
 
     // Use update instead of upsert to avoid RLS issues with insert permissions
-    // Since we know the row with ID 1 exists (from fetch), update is safe
+    // Use the ID from data if available, otherwise default to 1
+    const targetId = data.id || 1;
+
     const { error } = await supabase
         .from('radio_stream_data')
         .update(dbData)
-        .eq('id', 1);
+        .eq('id', targetId);
     return !error;
 };
 

@@ -69,6 +69,7 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
         console.log('Saving data:', updatedData);
         // Only send fields that exist in database, not messages
         const dataToSave = {
+            id: updatedData.id,
             title: updatedData.title,
             youtubeLink: updatedData.youtubeLink,
             whatsappLink: updatedData.whatsappLink,

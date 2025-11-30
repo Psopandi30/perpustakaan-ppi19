@@ -33,11 +33,12 @@ export interface ChatThread {
 }
 
 export interface RadioStreamData {
-    title: string;
-    youtubeLink: string;
-    whatsappLink: string;
-    isPublished: boolean;
-    messages: ChatMessage[];
+  id?: number;
+  title: string;
+  youtubeLink: string;
+  whatsappLink: string;
+  isPublished: boolean;
+  messages: ChatMessage[];
 }
 
 export interface Bulletin {
@@ -112,52 +113,52 @@ export interface Information {
 }
 
 export interface UserDashboardGridItem {
-    id: string;
-    label: string;
-    icon: React.ElementType;
+  id: string;
+  label: string;
+  icon: React.ElementType;
 }
 
 // Types for Quran API (api.quran.com)
 export interface QuranChapter {
-    id: number;
-    name_simple: string;
-    name_arabic: string;
-    revelation_place: string;
-    verses_count: number;
-    translated_name: {
-        name: string;
-    }
+  id: number;
+  name_simple: string;
+  name_arabic: string;
+  revelation_place: string;
+  verses_count: number;
+  translated_name: {
+    name: string;
+  }
 }
 
 export interface QuranVerse {
-    id: number;
-    verse_number: number;
-    text_imlaei: string; // Simple Imlaei script (plain text)
-    translation: string; // Indonesian translation
+  id: number;
+  verse_number: number;
+  text_imlaei: string; // Simple Imlaei script (plain text)
+  translation: string; // Indonesian translation
 }
 
 export interface QuranSurahDetail {
-    id: number;
-    name_simple: string;
-    name_arabic: string;
-    revelation_place: string;
-    verses_count: number;
-    bismillah_pre: boolean;
-    verses: QuranVerse[];
+  id: number;
+  name_simple: string;
+  name_arabic: string;
+  revelation_place: string;
+  verses_count: number;
+  bismillah_pre: boolean;
+  verses: QuranVerse[];
 }
 
 export interface Settings {
-    libraryName: string;
-    adminPassword: string;
-    loginLogo: string;
-    adminPhoto: string;
+  libraryName: string;
+  adminPassword: string;
+  loginLogo: string;
+  adminPhoto: string;
 }
 
 export interface Notification {
-    id: number;
-    type: 'live-streaming' | 'buletin' | 'karya-tulis' | 'buku-umum' | 'karya-asatidz' | 'materi-dakwah' | 'khutbah-jumat' | 'informasi';
-    title: string;
-    message: string;
-    timestamp: Date;
-    isRead: boolean;
+  id: number;
+  type: 'live-streaming' | 'buletin' | 'karya-tulis' | 'buku-umum' | 'karya-asatidz' | 'materi-dakwah' | 'khutbah-jumat' | 'informasi';
+  title: string;
+  message: string;
+  timestamp: Date;
+  isRead: boolean;
 }
