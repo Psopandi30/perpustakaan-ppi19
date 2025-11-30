@@ -88,6 +88,16 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
 
     const togglePublish = async () => {
         const newPublishedState = !radioStreamData.isPublished;
+
+        if (newPublishedState) {
+            // Starting stream
+            const startNewSession = window.confirm("Mulai sesi baru? Klik OK untuk menghapus chat lama, atau Cancel untuk melanjutkan sesi sebelumnya.");
+            if (startNewSession) {
+                await db.clearRadioChatMessages();
+                setRadioStreamData(prev => ({ ...prev, messages: [] }));
+            }
+        }
+
         await handleUpdateField('isPublished', newPublishedState);
         if (newPublishedState) {
             await db.addNotification({

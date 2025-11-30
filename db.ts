@@ -240,8 +240,14 @@ export const sendChatMessage = async (message: Omit<ChatMessage, 'id' | 'timesta
         message: message.message,
         is_admin: message.isAdmin
     };
-    const { data, error } = await supabase.from('chat_messages').insert(dbMessage as any).select().single();
-    if (error) return null;
+    const { data, error } = await supabase
+        .from('chat_messages')
+        .insert(dbMessage)
+        .select()
+        .single();
+
+    if (error || !data) return null;
+
     const d = data as any;
     return {
         id: d.id,
@@ -250,6 +256,14 @@ export const sendChatMessage = async (message: Omit<ChatMessage, 'id' | 'timesta
         isAdmin: d.is_admin,
         timestamp: new Date(d.created_at)
     };
+};
+
+export const clearRadioChatMessages = async (): Promise<boolean> => {
+    const { error } = await supabase
+        .from('chat_messages')
+        .delete()
+        .eq('is_radio_message', true);
+    return !error;
 };
 
 // --- Written Works (Skripsi/Jurnal) ---
