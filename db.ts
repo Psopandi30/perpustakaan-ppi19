@@ -169,7 +169,7 @@ export const deleteBulletin = async (id: number): Promise<boolean> => {
 
 // --- Radio Stream ---
 export const fetchRadioStreamData = async (): Promise<RadioStreamData> => {
-    const { data, error } = await supabase.from('radio_streams').select('*').single();
+    const { data, error } = await supabase.from('radio_stream_data').select('*').single();
 
     // Fetch messages for this stream (or global for now)
     const messages = await fetchChatMessages();
@@ -204,7 +204,7 @@ export const updateRadioStreamData = async (data: Partial<RadioStreamData>): Pro
     if (data.whatsappLink !== undefined) dbData.whatsapp_link = data.whatsappLink;
     if (data.isPublished !== undefined) dbData.is_published = data.isPublished;
 
-    const { error } = await supabase.from('radio_streams').upsert(dbData);
+    const { error } = await supabase.from('radio_stream_data').upsert(dbData);
     return !error;
 };
 
