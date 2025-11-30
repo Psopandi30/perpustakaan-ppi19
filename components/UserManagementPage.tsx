@@ -88,12 +88,12 @@ const UserManagementPage: React.FC<UserManagementPageProps> = () => {
                     </button>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="border-2 border-gray-300 rounded-lg overflow-hidden" style={{ maxHeight: '600px', overflow: 'auto' }}>
                     <table className="min-w-full bg-white text-sm">
-                        <thead className="border-b-2 border-gray-300">
+                        <thead className="bg-gray-100 border-b-2 border-gray-300 sticky top-0 z-10">
                             <tr>
                                 {['Nama Lengkap', 'Status', 'Alamat', 'Telepon', 'Username', 'Status Akun', 'Konfirmasi'].map((header) => (
-                                    <th key={header} className="px-4 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider">
+                                    <th key={header} className="px-4 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider bg-gray-100">
                                         {header}
                                     </th>
                                 ))}
@@ -110,8 +110,8 @@ const UserManagementPage: React.FC<UserManagementPageProps> = () => {
                                     <td className="px-4 py-3 whitespace-nowrap">
                                         <span
                                             className={`px-3 py-1 text-xs font-semibold rounded-full border ${user.akunStatus === 'Aktif'
-                                                    ? 'bg-green-100 text-green-800 border-green-300'
-                                                    : 'bg-gray-100 text-gray-800 border-gray-300'
+                                                ? 'bg-green-100 text-green-800 border-green-300'
+                                                : 'bg-gray-100 text-gray-800 border-gray-300'
                                                 }`}
                                         >
                                             {user.akunStatus}
