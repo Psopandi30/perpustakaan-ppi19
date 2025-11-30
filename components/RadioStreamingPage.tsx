@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import type { ChatMessage, RadioStreamData } from '../types';
-import { ChatBubbleIcon, SendIcon, UserCircleIcon, PlayIcon, PauseIcon, StopIcon, PencilIcon } from './icons/Icons';
+import { ChatBubbleIcon, SendIcon, UserCircleIcon, PlayIcon, PauseIcon, StopIcon, PencilIcon, TrashIcon } from './icons/Icons';
 import EditRadioStreamModal from './EditRadioStreamModal';
 import * as db from '../db';
 
@@ -93,7 +93,10 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
             // Starting stream
             const startNewSession = window.confirm("Mulai sesi baru? Klik OK untuk menghapus chat lama, atau Cancel untuk melanjutkan sesi sebelumnya.");
             if (startNewSession) {
-                await db.clearRadioChatMessages();
+                // We don't delete messages anymore (permission issue).
+                // Instead, toggling isPublished updates 'updated_at', 
+                // and we filter messages older than 'updated_at'.
+                // So just proceeding will effectively clear the chat view.
                 setRadioStreamData(prev => ({ ...prev, messages: [] }));
             }
         }
@@ -112,6 +115,19 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
 
     const stopPublish = async () => {
         await handleUpdateField('isPublished', false);
+    }
+
+    const handleClearChat = async () => {
+        const confirmed = window.confirm("Apakah Anda yakin ingin menghapus semua pesan chat? Tindakan ini tidak dapat dibatalkan.");
+        if (confirmed) {
+            const success = await db.clearRadioChatMessages();
+            if (success) {
+                setRadioStreamData(prev => ({ ...prev, messages: [] }));
+                alert("Chat berhasil dihapus!");
+            } else {
+                alert("Gagal menghapus chat. Silakan coba lagi.");
+            }
+        }
     }
 
     return (
@@ -146,6 +162,9 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
                                 </button>
                                 <button onClick={() => setIsEditModalOpen(true)} title="Edit">
                                     <PencilIcon className="h-6 w-6 text-dark-teal hover:text-teal-800" />
+                                </button>
+                                <button onClick={handleClearChat} title="Hapus Semua Chat">
+                                    <TrashIcon className="h-6 w-6 text-red-600 hover:text-red-800" />
                                 </button>
                             </td>
                         </tr>

@@ -38,6 +38,7 @@ export interface RadioStreamData {
   youtubeLink: string;
   whatsappLink: string;
   isPublished: boolean;
+  updatedAt?: string; // Penanda waktu sesi dimulai
   messages: ChatMessage[];
 }
 

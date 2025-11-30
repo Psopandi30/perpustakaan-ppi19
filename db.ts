@@ -186,13 +186,20 @@ export const fetchRadioStreamData = async (): Promise<RadioStreamData> => {
     }
 
     const d = data as any;
+
+    // Filter messages: Only show messages created AFTER the stream was last updated (Session Start)
+    // This effectively "clears" old chat messages when a new session starts (isPublished toggled)
+    const sessionStartTime = new Date(d.updated_at).getTime();
+    const currentMessages = messages.filter(msg => msg.timestamp.getTime() > sessionStartTime);
+
     return {
         id: d.id,
         title: d.title,
         youtubeLink: d.youtube_link,
         whatsappLink: d.whatsapp_link,
         isPublished: d.is_published,
-        messages: messages
+        updatedAt: d.updated_at,
+        messages: currentMessages
     };
 };
 
