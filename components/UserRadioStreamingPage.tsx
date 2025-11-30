@@ -106,14 +106,7 @@ const UserRadioStreamingPage: React.FC<UserRadioStreamingPageProps> = ({ user, o
                     )}
                 </div>
 
-                <div className="text-center text-dark-teal">
-                    <p className="font-bold">JUDUL SIARAN LIVE</p>
-                    <h2 className="text-xl font-bold">{radioStreamData.isPublished ? radioStreamData.title : 'Belum ada siaran'}</h2>
-                    <div className="flex items-center justify-center space-x-2 mt-2">
-                        <WhatsappIcon className="w-5 h-5 text-green-500" />
-                        <span>Request {radioStreamData.whatsappLink || '...'}</span>
-                    </div>
-                </div>
+                {/* Title and WhatsApp removed as per request */}
 
                 <div className="flex-grow flex flex-col pt-4 min-h-0">
                     <div className="flex items-center space-x-2 mb-4">
@@ -127,8 +120,8 @@ const UserRadioStreamingPage: React.FC<UserRadioStreamingPageProps> = ({ user, o
                                 <div key={msg.id} className={`flex items-start space-x-3 ${msg.isAdmin ? 'justify-end' : ''}`}>
                                     {!msg.isAdmin && <UserCircleIcon className="h-6 w-6 text-gray-400 flex-shrink-0 mt-1" />}
                                     <div className={`px-4 py-2 rounded-2xl max-w-sm ${msg.isAdmin
-                                            ? 'bg-teal-100 text-gray-800 rounded-br-none'
-                                            : 'bg-white text-gray-700 border border-gray-200 rounded-bl-none'
+                                        ? 'bg-teal-100 text-gray-800 rounded-br-none'
+                                        : 'bg-white text-gray-700 border border-gray-200 rounded-bl-none'
                                         }`}>
                                         {!msg.isAdmin && <p className="font-bold text-sm text-dark-teal">{msg.sender}</p>}
                                         <p>{msg.message}</p>
