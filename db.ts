@@ -640,3 +640,7 @@ export const addNotification = async (notification: Omit<Notification, 'id'>): P
 export const markNotificationAsRead = async (id: number): Promise<void> => {
     await supabase.from('notifications').update({ is_read: true } as any).eq('id', id);
 };
+
+export const markAllNotificationsAsRead = async (): Promise<void> => {
+    await supabase.from('notifications').update({ is_read: true } as any).eq('is_read', false);
+};

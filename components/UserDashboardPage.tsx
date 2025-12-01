@@ -68,37 +68,32 @@ const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, o
 
     useEffect(() => {
         const loadData = async () => {
-            // Load notifications (mock for now or implement db fetch)
-            // setNotifications(await db.fetchNotifications()); 
+            // Load notifications from database
+            const notifs = await db.fetchNotifications();
+            setNotifications(notifs);
 
             // Load latest information
             const info = await db.fetchInformation();
             if (info.length > 0) {
                 setInformation(info[info.length - 1]);
             }
-
-            // Check unread chat
-            // const threads = await db.fetchChatThreads(); // This might be heavy if we fetch all. 
-            // Ideally we need fetchChatThreadForUser(userId)
-            const messages = await db.fetchChatMessages();
-            // Filter for this user and check unread
-            // This logic should ideally be in db.ts or backend
-            const userMessages = messages.filter(m => m.sender === user.username || m.sender === 'Admin'); // Simplified logic
-            // We need a way to track unread status per user. 
-            // Current schema doesn't support 'unread' flag well for individual messages efficiently without thread tracking.
-            // We'll skip unread chat badge for now or implement it later.
         };
+
         loadData();
+
+        // Poll for new notifications every 10 seconds
+        const interval = setInterval(loadData, 10000);
+        return () => clearInterval(interval);
     }, [user.id]);
 
-    const handleMarkAsRead = (id: number) => {
-        // Implement mark as read in DB
+    const handleMarkAsRead = async (id: number) => {
+        await db.markNotificationAsRead(id);
         const updated = notifications.map(n => n.id === id ? { ...n, isRead: true } : n);
         setNotifications(updated);
     };
 
-    const handleMarkAllAsRead = () => {
-        // Implement mark all as read in DB
+    const handleMarkAllAsRead = async () => {
+        await db.markAllNotificationsAsRead();
         const updated = notifications.map(n => ({ ...n, isRead: true }));
         setNotifications(updated);
     };
