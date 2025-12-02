@@ -151,24 +151,24 @@ const MateriDakwahPage: React.FC<MateriDakwahPageProps> = () => {
                     </table>
                 </div>
             </div>
-        </div >
-            { isAddModalOpen && (
+
+            {isAddModalOpen && (
                 <AddMateriDakwahModal
                     onClose={() => setIsAddModalOpen(false)}
                     onSave={handleAddWork}
                 />
             )
-}
-{
-    editingWork && (
-        <EditMateriDakwahModal
-            work={editingWork}
-            onClose={() => setEditingWork(null)}
-            onSave={handleUpdateWork}
-        />
-    )
-}
-<style>{`
+            }
+            {
+                editingWork && (
+                    <EditMateriDakwahModal
+                        work={editingWork}
+                        onClose={() => setEditingWork(null)}
+                        onSave={handleUpdateWork}
+                    />
+                )
+            }
+            <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 10px;
                     height: 10px;

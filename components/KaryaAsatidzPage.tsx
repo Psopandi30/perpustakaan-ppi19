@@ -151,24 +151,24 @@ const KaryaAsatidzPage: React.FC<KaryaAsatidzPageProps> = () => {
                     </table>
                 </div>
             </div>
-        </div >
-            { isAddModalOpen && (
+
+            {isAddModalOpen && (
                 <AddKaryaAsatidzModal
                     onClose={() => setIsAddModalOpen(false)}
                     onSave={handleAddWork}
                 />
             )
-}
-{
-    editingWork && (
-        <EditKaryaAsatidzModal
-            work={editingWork}
-            onClose={() => setEditingWork(null)}
-            onSave={handleUpdateWork}
-        />
-    )
-}
-<style>{`
+            }
+            {
+                editingWork && (
+                    <EditKaryaAsatidzModal
+                        work={editingWork}
+                        onClose={() => setEditingWork(null)}
+                        onSave={handleUpdateWork}
+                    />
+                )
+            }
+            <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 10px;
                     height: 10px;

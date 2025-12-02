@@ -151,24 +151,24 @@ const KhutbahJumatPage: React.FC<KhutbahJumatPageProps> = () => {
                     </table>
                 </div>
             </div>
-        </div >
-            { isAddModalOpen && (
+
+            {isAddModalOpen && (
                 <AddKhutbahJumatModal
                     onClose={() => setIsAddModalOpen(false)}
                     onSave={handleAddWork}
                 />
             )
-}
-{
-    editingWork && (
-        <EditKhutbahJumatModal
-            work={editingWork}
-            onClose={() => setEditingWork(null)}
-            onSave={handleUpdateWork}
-        />
-    )
-}
-<style>{`
+            }
+            {
+                editingWork && (
+                    <EditKhutbahJumatModal
+                        work={editingWork}
+                        onClose={() => setEditingWork(null)}
+                        onSave={handleUpdateWork}
+                    />
+                )
+            }
+            <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 10px;
                     height: 10px;

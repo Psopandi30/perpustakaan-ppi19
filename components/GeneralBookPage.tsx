@@ -151,24 +151,24 @@ const GeneralBookPage: React.FC = () => {
                     </table>
                 </div>
             </div>
-        </div >
-            { isAddModalOpen && (
+
+            {isAddModalOpen && (
                 <AddGeneralBookModal
                     onClose={() => setIsAddModalOpen(false)}
                     onSave={handleAddBook}
                 />
             )
-}
-{
-    editingBook && (
-        <EditGeneralBookModal
-            book={editingBook}
-            onClose={() => setEditingBook(null)}
-            onSave={handleUpdateBook}
-        />
-    )
-}
-<style>{`
+            }
+            {
+                editingBook && (
+                    <EditGeneralBookModal
+                        book={editingBook}
+                        onClose={() => setEditingBook(null)}
+                        onSave={handleUpdateBook}
+                    />
+                )
+            }
+            <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 10px;
                     height: 10px;

@@ -150,7 +150,7 @@ const WrittenWorkPage: React.FC = () => {
                     </table>
                 </div>
             </div>
-        </div >
+
             { isAddModalOpen && (
                 <AddWrittenWorkModal
                     onClose={() => setIsAddModalOpen(false)}
