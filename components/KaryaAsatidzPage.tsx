@@ -87,86 +87,88 @@ const KaryaAsatidzPage: React.FC<KaryaAsatidzPageProps> = () => {
                     </button>
                 </div>
 
-                <div className="flex-grow border-2 border-gray-300 rounded-lg overflow-hidden flex flex-col">
-                    <div className="overflow-x-auto overflow-y-auto custom-scrollbar h-full">
-                        <table className="min-w-full bg-white text-sm">
-                            <thead className="bg-gray-100 sticky top-0 z-10 border-b-2 border-gray-300">
-                                <tr>
-                                    <th className="px-4 py-3 text-left font-semibold text-gray-600">No</th>
-                                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Judul</th>
-                                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Nama Penulis</th>
-                                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Tanggal Terbit</th>
-                                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Cover</th>
-                                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Draf</th>
-                                    <th className="px-4 py-3 w-24"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                                {works.map((work, index) => {
-                                    const coverUrl = resolveImageUrl(work.coverLink);
-                                    return (
-                                        <tr key={work.id} className="hover:bg-gray-50">
-                                            <td className="px-4 py-3 text-gray-500">{index + 1}</td>
-                                            <td className="px-4 py-3 font-medium text-green-700">{work.judul}</td>
-                                            <td className="px-4 py-3 text-gray-500">{work.namaPenulis}</td>
-                                            <td className="px-4 py-3 text-gray-500">{work.tanggalTerbit}</td>
-                                            <td className="px-4 py-3">
-                                                {coverUrl ? (
-                                                    <img src={coverUrl} alt={`Cover ${work.judul}`} className="h-16 w-12 object-cover rounded-md border" />
-                                                ) : (
-                                                    <span className="text-gray-400 text-sm">Belum ada cover</span>
-                                                )}
-                                            </td>
-                                            <td className="px-4 py-3 text-blue-600 hover:underline">
-                                                <a href={work.drafLink} target="_blank" rel="noopener noreferrer">Link Buku Google Drive</a>
-                                            </td>
-                                            <td className="px-4 py-3">
-                                                <div className="flex items-center space-x-2">
-                                                    <button
-                                                        onClick={() => setEditingWork(work)}
-                                                        className="text-black hover:text-gray-700"
-                                                        title="Edit"
-                                                    >
-                                                        <PencilIcon className="h-5 w-5" />
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDelete(work.id)}
-                                                        className="text-red-600 hover:text-red-800"
-                                                        title="Delete"
-                                                    >
-                                                        <TrashIcon className="h-5 w-5" />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                                {works.length === 0 && (
-                                    <tr>
-                                        <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                                            {isLoading ? 'Loading...' : 'Tidak ada data karya ulama persis.'}
+                <div className="border-2 border-gray-300 rounded-lg overflow-hidden" style={{ maxHeight: '600px', overflow: 'auto' }}>
+                    <table className="min-w-full bg-white text-sm">
+                        <thead className="bg-gray-100 border-b-2 border-gray-300 sticky top-0 z-10">
+                            <tr>
+                                <th className="px-4 py-3 text-left font-semibold text-gray-600">No</th>
+                                <th className="px-4 py-3 text-left font-semibold text-gray-600">Judul</th>
+                                <th className="px-4 py-3 text-left font-semibold text-gray-600">Nama Penulis</th>
+                                <th className="px-4 py-3 text-left font-semibold text-gray-600">Tanggal Terbit</th>
+                                <th className="px-4 py-3 text-left font-semibold text-gray-600">Cover</th>
+                                <th className="px-4 py-3 text-left font-semibold text-gray-600">Draf</th>
+                                <th className="px-4 py-3 w-24"></th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {works.map((work, index) => {
+                                const coverUrl = resolveImageUrl(work.coverLink);
+                                return (
+                                    <tr key={work.id} className="hover:bg-gray-50">
+                                        <td className="px-4 py-3 text-gray-500">{index + 1}</td>
+                                        <td className="px-4 py-3 font-medium text-green-700">{work.judul}</td>
+                                        <td className="px-4 py-3 text-gray-500">{work.namaPenulis}</td>
+                                        <td className="px-4 py-3 text-gray-500">{work.tanggalTerbit}</td>
+                                        <td className="px-4 py-3">
+                                            {coverUrl ? (
+                                                <img src={coverUrl} alt={`Cover ${work.judul}`} className="h-16 w-12 object-cover rounded-md border" />
+                                            ) : (
+                                                <span className="text-gray-400 text-sm">Belum ada cover</span>
+                                            )}
+                                        </td>
+                                        <td className="px-4 py-3 text-blue-600 hover:underline">
+                                            <a href={work.drafLink} target="_blank" rel="noopener noreferrer">Link Buku Google Drive</a>
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <div className="flex items-center space-x-2">
+                                                <button
+                                                    onClick={() => setEditingWork(work)}
+                                                    className="text-black hover:text-gray-700"
+                                                    title="Edit"
+                                                >
+                                                    <PencilIcon className="h-5 w-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(work.id)}
+                                                    className="text-red-600 hover:text-red-800"
+                                                    title="Delete"
+                                                >
+                                                    <TrashIcon className="h-5 w-5" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                                )
+                            })}
+                            {works.length === 0 && (
+                                <tr>
+                                    <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
+                                        {isLoading ? 'Loading...' : 'Tidak ada data karya ulama persis.'}
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            {isAddModalOpen && (
+        </div >
+            { isAddModalOpen && (
                 <AddKaryaAsatidzModal
                     onClose={() => setIsAddModalOpen(false)}
                     onSave={handleAddWork}
                 />
-            )}
-            {editingWork && (
-                <EditKaryaAsatidzModal
-                    work={editingWork}
-                    onClose={() => setEditingWork(null)}
-                    onSave={handleUpdateWork}
-                />
-            )}
-            <style>{`
+            )
+}
+{
+    editingWork && (
+        <EditKaryaAsatidzModal
+            work={editingWork}
+            onClose={() => setEditingWork(null)}
+            onSave={handleUpdateWork}
+        />
+    )
+}
+<style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 10px;
                     height: 10px;

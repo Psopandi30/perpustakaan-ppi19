@@ -92,9 +92,9 @@ const BulletinPage: React.FC<BulletinPageProps> = () => {
                 </div>
 
                 <div className="flex-grow border-2 border-gray-300 rounded-lg overflow-hidden flex flex-col">
-                    <div className="overflow-x-auto overflow-y-auto custom-scrollbar h-full">
+                    <div className="border-2 border-gray-300 rounded-lg overflow-hidden" style={{ maxHeight: '600px', overflow: 'auto' }}>
                         <table className="min-w-full bg-white text-sm">
-                            <thead className="bg-gray-100 sticky top-0 z-10 border-b-2 border-gray-300">
+                            <thead className="bg-gray-100 border-b-2 border-gray-300 sticky top-0 z-10">
                                 <tr>
                                     <th className="px-4 py-3 text-left font-semibold text-gray-600">No</th>
                                     <th className="px-4 py-3 text-left font-semibold text-gray-600">Judul Buletin</th>
