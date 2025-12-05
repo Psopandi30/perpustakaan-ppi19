@@ -103,12 +103,12 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
 
         await handleUpdateField('isPublished', newPublishedState);
         if (newPublishedState) {
+            // Send generic notification without title
             await db.addNotification({
                 type: 'live-streaming',
                 title: 'Live Streaming Dimulai!',
-                message: `"${radioStreamData.title}" sedang live streaming sekarang. Yuk tonton!`,
-                timestamp: new Date(),
-                isRead: false,
+                message: 'Siaran langsung sedang berlangsung. Yuk tonton!',
+                isRead: false
             });
         }
     }
