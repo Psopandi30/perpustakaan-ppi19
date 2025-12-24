@@ -171,9 +171,6 @@ export const deleteBulletin = async (id: number): Promise<boolean> => {
 export const fetchRadioStreamData = async (): Promise<RadioStreamData> => {
     const { data, error } = await supabase.from('radio_stream_data').select('*').single();
 
-    // Fetch messages for this stream (or global for now)
-    const messages = await fetchChatMessages();
-
     if (error || !data) {
         // Return default if not found
         return {
@@ -181,16 +178,26 @@ export const fetchRadioStreamData = async (): Promise<RadioStreamData> => {
             youtubeLink: '',
             whatsappLink: '',
             isPublished: false,
-            messages: messages
+            messages: []
         };
     }
 
     const d = data as any;
 
-    // Filter messages: Only show messages created AFTER the stream was last updated (Session Start)
-    // This effectively "clears" old chat messages when a new session starts (isPublished toggled)
-    const sessionStartTime = new Date(d.updated_at).getTime();
-    const currentMessages = messages.filter(msg => msg.timestamp.getTime() > sessionStartTime);
+    // Optimized: Only fetch messages created AFTER the stream was last updated
+    const { data: msgData } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .gt('created_at', d.updated_at)
+        .order('created_at', { ascending: true });
+
+    const currentMessages = (msgData as any[] || []).map(m => ({
+        id: m.id,
+        sender: m.sender,
+        message: m.message,
+        isAdmin: m.is_admin,
+        timestamp: new Date(m.created_at)
+    }));
 
     return {
         id: d.id,
@@ -228,11 +235,13 @@ export const fetchChatMessages = async (): Promise<ChatMessage[]> => {
     const { data, error } = await supabase
         .from('chat_messages')
         .select('*')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: false }) // Get newest first
+        .limit(100); // Limit to last 100 messages for safety
 
     if (error) return [];
 
-    return (data as any[] || []).map(m => ({
+    // Reverse back to ascending for display
+    return (data as any[] || []).reverse().map(m => ({
         id: m.id,
         sender: m.sender,
         message: m.message,
