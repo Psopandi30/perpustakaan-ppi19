@@ -1,0 +1,1 @@
+const t=r=>new Promise((o,a)=>{const e=new FileReader;e.onload=()=>{typeof e.result=="string"?o(e.result):a(new Error("Failed to read file"))},e.onerror=()=>a(e.error||new Error("Failed to read file")),e.readAsDataURL(r)}),s=r=>/^image\/(png|jpe?g)$/i.test(r.type);export{s as i,t as r};
