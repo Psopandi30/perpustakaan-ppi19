@@ -14,9 +14,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['pwa-icon.png'],
       manifest: {
-        name: 'Perpustakaan Digital IAI Persis Garut',
-        short_name: 'Literasi IAI',
-        description: 'Sistem Literasi Membaca untuk IAI Persis Garut',
+        name: 'Perpustakaan Digital PPI 19 Garut',
+        short_name: 'Literasi PPI 19',
+        description: 'Sistem Literasi Membaca untuk PPI 19 Garut',
         theme_color: '#1A3A3A',
         background_color: '#ffffff',
         display: 'standalone',
@@ -27,18 +27,20 @@ export default defineConfig({
           {
             src: 'pwa-icon.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'pwa-icon.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'pwa-icon.png',
             sizes: '192x192',
             type: 'image/png',
-            purpose: 'any'
+            purpose: 'maskable'
           },
           {
             src: 'pwa-icon.png',
@@ -47,6 +49,9 @@ export default defineConfig({
             purpose: 'maskable'
           }
         ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}']
       }
     })
   ],
@@ -54,5 +59,19 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, '.'),
     }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Vendor chunks untuk optimasi
+          'react-vendor': ['react', 'react-dom'],
+          'supabase-vendor': ['@supabase/supabase-js'],
+          'charts-vendor': ['recharts'],
+        },
+      },
+    },
+    // Meningkatkan chunk size warning limit karena kita sudah melakukan code splitting
+    chunkSizeWarningLimit: 600,
   }
 });

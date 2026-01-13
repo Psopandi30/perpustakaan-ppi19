@@ -18,46 +18,53 @@ const AdminChatPage: React.FC<AdminChatPageProps> = () => {
 
     const loadData = async () => {
         setIsLoading(true);
-        const fetchedUsers = await db.fetchUsers();
-        setUsers(fetchedUsers);
+        try {
+            const fetchedUsers = await db.fetchUsers();
+            setUsers(fetchedUsers);
 
-        // In a real app, we should fetch threads per user or a summary.
-        // For now, we fetch all messages and group them manually since we don't have a threads table.
-        // This is inefficient for large data but works for this scale.
-        const allMessages = await db.fetchChatMessages();
-        const threads: Record<number, ChatThread> = {};
+            // In a real app, we should fetch threads per user or a summary.
+            // For now, we fetch all messages and group them manually since we don't have a threads table.
+            // This is inefficient for large data but works for this scale.
+            const allMessages = await db.fetchChatMessages();
+            const threads: Record<number, ChatThread> = {};
 
-        // Initialize threads for all users
-        fetchedUsers.forEach(u => {
-            threads[u.id] = { messages: [], unreadByAdmin: false, unreadByUser: false };
-        });
+            // Initialize threads for all users
+            fetchedUsers.forEach(u => {
+                threads[u.id] = { messages: [], unreadByAdmin: false, unreadByUser: false };
+            });
 
-        // Distribute messages (Assuming sender name matches user name or we need a better link)
-        // Since we don't have user_id in chat_messages, we rely on sender name matching username or full name.
-        // Ideally, we should update the schema to include user_id. 
-        // For this refactor, I will assume 'sender' is the username.
+            // Distribute messages (Assuming sender name matches user name or we need a better link)
+            // Since we don't have user_id in chat_messages, we rely on sender name matching username or full name.
+            // Ideally, we should update the schema to include user_id. 
+            // For this refactor, I will assume 'sender' is the username.
 
-        allMessages.forEach(msg => {
-            const user = fetchedUsers.find(u => u.username === msg.sender || u.namaLengkap === msg.sender);
-            if (user) {
-                if (!threads[user.id]) threads[user.id] = { messages: [], unreadByAdmin: false, unreadByUser: false };
-                threads[user.id].messages.push(msg);
-            } else if (msg.sender === 'Admin') {
-                // Admin messages need to go to the right thread. 
-                // But we don't know who it was sent to without a recipient_id.
-                // This reveals a flaw in the current schema for 1-on-1 chat.
-                // The current schema seems designed for a public chat room (Radio Stream).
-                // However, the requirement is "Chat Pengguna". 
-                // I will assume for now that this page is for the Radio Stream chat which is public/global?
-                // BUT the UI shows "Chat with {selectedUser.namaLengkap}".
-                // So it implies private chat.
-                // I will proceed by just showing the UI but noting that the backend schema needs 'recipient_id' for private chat.
-                // For now, I will just list users and show an empty chat or a placeholder.
-            }
-        });
+            allMessages.forEach(msg => {
+                const user = fetchedUsers.find(u => u.username === msg.sender || u.namaLengkap === msg.sender);
+                if (user) {
+                    if (!threads[user.id]) threads[user.id] = { messages: [], unreadByAdmin: false, unreadByUser: false };
+                    threads[user.id].messages.push(msg);
+                } else if (msg.sender === 'Admin') {
+                    // Admin messages need to go to the right thread. 
+                    // But we don't know who it was sent to without a recipient_id.
+                    // This reveals a flaw in the current schema for 1-on-1 chat.
+                    // The current schema seems designed for a public chat room (Radio Stream).
+                    // However, the requirement is "Chat Pengguna". 
+                    // I will assume for now that this page is for the Radio Stream chat which is public/global?
+                    // BUT the UI shows "Chat with {selectedUser.namaLengkap}".
+                    // So it implies private chat.
+                    // I will proceed by just showing the UI but noting that the backend schema needs 'recipient_id' for private chat.
+                    // For now, I will just list users and show an empty chat or a placeholder.
+                }
+            });
 
-        setChatThreads(threads);
-        setIsLoading(false);
+            setChatThreads(threads);
+        } catch (error) {
+            console.error('Error loading chat data:', error);
+            setUsers([]);
+            setChatThreads({});
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {

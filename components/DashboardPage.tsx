@@ -1,19 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import VisitorChart from './VisitorChart';
-import UserManagementPage from './UserManagementPage';
-import RadioStreamingPage from './RadioStreamingPage';
-import BulletinPage from './BulletinPage';
-import WrittenWorkPage from './WrittenWorkPage';
-import GeneralBookPage from './GeneralBookPage';
-import KaryaAsatidzPage from './KaryaAsatidzPage';
-import MateriDakwahPage from './MateriDakwahPage';
-import KhutbahJumatPage from './KhutbahJumatPage';
-import InformationPage from './InformationPage';
-import AdminChatPage from './AdminChatPage';
-import SettingsPage from './SettingsPage';
+import Loading from './Loading';
 import type { Settings } from '../types';
+
+// Lazy load semua page components untuk code splitting
+const UserManagementPage = lazy(() => import('./UserManagementPage'));
+const RadioStreamingPage = lazy(() => import('./RadioStreamingPage'));
+const BulletinPage = lazy(() => import('./BulletinPage'));
+const WrittenWorkPage = lazy(() => import('./WrittenWorkPage'));
+const GeneralBookPage = lazy(() => import('./GeneralBookPage'));
+const KaryaAsatidzPage = lazy(() => import('./KaryaAsatidzPage'));
+const MateriDakwahPage = lazy(() => import('./MateriDakwahPage'));
+const KhutbahJumatPage = lazy(() => import('./KhutbahJumatPage'));
+const InformationPage = lazy(() => import('./InformationPage'));
+const BannerPage = lazy(() => import('./BannerPage'));
+const ArticlePage = lazy(() => import('./ArticlePage'));
+const AdminChatPage = lazy(() => import('./AdminChatPage'));
+const SettingsPage = lazy(() => import('./SettingsPage'));
 
 interface DashboardPageProps {
   onLogout: () => void;
@@ -33,27 +38,83 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ onLogout, settings }) => 
   const renderContent = () => {
     switch (activePage) {
       case 'user':
-        return <UserManagementPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman manajemen user..." />}>
+            <UserManagementPage />
+          </Suspense>
+        );
       case 'radio':
-        return <RadioStreamingPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman live streaming..." />}>
+            <RadioStreamingPage />
+          </Suspense>
+        );
       case 'bulletin':
-        return <BulletinPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman buletin..." />}>
+            <BulletinPage />
+          </Suspense>
+        );
       case 'karya-tulis':
-        return <WrittenWorkPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman karya tulis..." />}>
+            <WrittenWorkPage />
+          </Suspense>
+        );
       case 'buku-umum':
-        return <GeneralBookPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman buku umum..." />}>
+            <GeneralBookPage />
+          </Suspense>
+        );
       case 'karya-asatidz':
-        return <KaryaAsatidzPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman karya asatidz..." />}>
+            <KaryaAsatidzPage />
+          </Suspense>
+        );
       case 'materi-dakwah':
-        return <MateriDakwahPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman materi dakwah..." />}>
+            <MateriDakwahPage />
+          </Suspense>
+        );
       case 'khutbah-jumat':
-        return <KhutbahJumatPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman khutbah jumat..." />}>
+            <KhutbahJumatPage />
+          </Suspense>
+        );
       case 'informasi':
-        return <InformationPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman informasi..." />}>
+            <InformationPage />
+          </Suspense>
+        );
+      case 'banner':
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman banner..." />}>
+            <BannerPage />
+          </Suspense>
+        );
+      case 'article':
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman artikel..." />}>
+            <ArticlePage />
+          </Suspense>
+        );
       case 'chat':
-        return <AdminChatPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman chat..." />}>
+            <AdminChatPage />
+          </Suspense>
+        );
       case 'settings':
-        return <SettingsPage />;
+        return (
+          <Suspense fallback={<Loading message="Memuat halaman pengaturan..." />}>
+            <SettingsPage />
+          </Suspense>
+        );
       case 'dashboard':
       default:
         return (

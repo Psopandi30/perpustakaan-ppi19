@@ -4,19 +4,20 @@ import RegistrationModal from './RegistrationModal';
 import type { User, Settings } from '../types';
 
 interface LoginPageProps {
-  onLogin: (username: string, password: string) => boolean;
+  onLogin: (username: string, password: string) => Promise<boolean>;
   onRegister: (user: Omit<User, 'id' | 'akunStatus'>) => void;
   settings: Settings;
+  onBack?: () => void;
 }
 
-const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister, settings }) => {
+const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister, settings, onBack }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     if (!username || !password) {
@@ -24,7 +25,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister, settings }) 
       return;
     }
 
-    const success = onLogin(username, password);
+    const success = await onLogin(username, password);
     if (!success) {
       setError('Invalid username or password. Please try again.');
     }
@@ -34,6 +35,14 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister, settings }) 
     <>
       <div className="flex flex-col items-center justify-center min-h-screen bg-dark-teal p-4">
         <div className="w-full max-w-sm mx-auto text-center">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="mb-4 text-white hover:text-brand-yellow transition-colors text-sm"
+            >
+              ← Kembali ke Halaman Utama
+            </button>
+          )}
           <div className="mx-auto mb-8 w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
             {settings.loginLogo ? (
               <img
@@ -110,12 +119,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister, settings }) 
           </p>
 
           <p className="mt-8 text-xs text-white text-center">
-            Development by Mahasiswa Ilmu AL Quran & Tafsir IAI Persis Garut Angkatan 2024
+            Development by Pendi Sopandi , S. Kom, ITS
           </p>
         </div>
       </div>
       {isRegisterModalOpen && (
-        <RegistrationModal 
+        <RegistrationModal
           onClose={() => setIsRegisterModalOpen(false)}
           onSave={onRegister}
         />

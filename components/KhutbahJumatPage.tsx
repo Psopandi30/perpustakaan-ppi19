@@ -18,9 +18,15 @@ const KhutbahJumatPage: React.FC<KhutbahJumatPageProps> = () => {
 
     const loadWorks = async () => {
         setIsLoading(true);
-        const data = await db.fetchKhutbahJumat();
-        setWorks(data);
-        setIsLoading(false);
+        try {
+            const data = await db.fetchKhutbahJumat();
+            setWorks(data);
+        } catch (error) {
+            console.error('Error loading khutbah jumat:', error);
+            setWorks([]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {

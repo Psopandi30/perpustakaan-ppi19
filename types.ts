@@ -163,3 +163,25 @@ export interface Notification {
   timestamp: Date;
   isRead: boolean;
 }
+
+export interface Banner {
+  id: number;
+  judul: string;
+  imageUrl: string;
+  linkUrl?: string;
+  urutan: number;
+  isActive: boolean;
+}
+
+export interface Article {
+  id: number;
+  judul: string;
+  konten?: string;
+  tanggalTerbit: string;
+  imageUrl?: string;
+}
+
+export interface PrayerTime {
+  name: string;
+  time: string;
+}

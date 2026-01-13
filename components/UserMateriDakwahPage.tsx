@@ -84,11 +84,21 @@ const UserMateriDakwahPage: React.FC<UserMateriDakwahPageProps> = ({ onBack }) =
     useEffect(() => {
         const loadWorks = async () => {
             setIsLoading(true);
-            const data = await db.fetchMateriDakwah();
-            setWorks(data);
-            setIsLoading(false);
+            try {
+                const data = await db.fetchMateriDakwah();
+                setWorks(data);
+            } catch (error) {
+                console.error('Error loading materi dakwah:', error);
+                setWorks([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadWorks();
+        
+        // Poll for new materi dakwah every 30 seconds
+        const interval = setInterval(loadWorks, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     if (selectedWork) {

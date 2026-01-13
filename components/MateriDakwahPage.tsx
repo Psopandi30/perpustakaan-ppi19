@@ -18,9 +18,15 @@ const MateriDakwahPage: React.FC<MateriDakwahPageProps> = () => {
 
     const loadWorks = async () => {
         setIsLoading(true);
-        const data = await db.fetchMateriDakwah();
-        setWorks(data);
-        setIsLoading(false);
+        try {
+            const data = await db.fetchMateriDakwah();
+            setWorks(data);
+        } catch (error) {
+            console.error('Error loading materi dakwah:', error);
+            setWorks([]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {

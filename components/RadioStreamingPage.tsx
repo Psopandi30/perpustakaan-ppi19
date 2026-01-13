@@ -108,6 +108,7 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
                 type: 'live-streaming',
                 title: 'Live Streaming Dimulai!',
                 message: 'Siaran langsung sedang berlangsung. Yuk tonton!',
+                timestamp: new Date(),
                 isRead: false
             });
         }

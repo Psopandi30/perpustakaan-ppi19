@@ -84,11 +84,21 @@ const UserKhutbahJumatPage: React.FC<UserKhutbahJumatPageProps> = ({ onBack }) =
     useEffect(() => {
         const loadWorks = async () => {
             setIsLoading(true);
-            const data = await db.fetchKhutbahJumat();
-            setWorks(data);
-            setIsLoading(false);
+            try {
+                const data = await db.fetchKhutbahJumat();
+                setWorks(data);
+            } catch (error) {
+                console.error('Error loading khutbah jumat:', error);
+                setWorks([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadWorks();
+        
+        // Poll for new khutbah jumat every 30 seconds
+        const interval = setInterval(loadWorks, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     if (selectedWork) {

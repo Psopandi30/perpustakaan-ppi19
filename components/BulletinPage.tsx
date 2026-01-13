@@ -18,9 +18,15 @@ const BulletinPage: React.FC<BulletinPageProps> = () => {
 
     const loadBulletins = async () => {
         setIsLoading(true);
-        const data = await db.fetchBulletins();
-        setBulletins(data);
-        setIsLoading(false);
+        try {
+            const data = await db.fetchBulletins();
+            setBulletins(data);
+        } catch (error) {
+            console.error('Error loading bulletins:', error);
+            setBulletins([]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
@@ -37,6 +43,7 @@ const BulletinPage: React.FC<BulletinPageProps> = () => {
                 type: 'buletin',
                 title: 'Buletin Baru Tersedia!',
                 message: `Buletin "${addedBulletin.judul}" telah ditambahkan. Silakan baca sekarang!`,
+                timestamp: new Date(),
                 isRead: false,
             });
         } else {

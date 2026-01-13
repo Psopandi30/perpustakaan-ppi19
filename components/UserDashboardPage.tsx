@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import type { User, UserDashboardGridItem, Notification, Information } from '../types';
 import {
     UserCircleIcon,
@@ -17,23 +17,30 @@ import {
     BellIcon,
 } from './icons/Icons';
 import NotificationPanel from './NotificationPanel';
+import Loading from './Loading';
 import * as db from '../db';
-import UserRadioStreamingPage from './UserRadioStreamingPage';
-import UserChatPage from './UserChatPage';
-import UserAccountPage from './UserAccountPage';
-import UserBulletinPage from './UserBulletinPage';
-import UserHadithPage from './UserHadithPage';
-import UserQuranPage from './UserQuranPage';
-import UserWrittenWorkPage from './UserWrittenWorkPage';
-import UserGeneralBookPage from './UserGeneralBookPage';
-import UserMateriDakwahPage from './UserMateriDakwahPage';
-import UserKaryaAsatidzPage from './UserKaryaAsatidzPage';
-import UserKhutbahJumatPage from './UserKhutbahJumatPage';
+
+// Lazy load semua user page components untuk code splitting
+const UserRadioStreamingPage = lazy(() => import('./UserRadioStreamingPage'));
+const UserChatPage = lazy(() => import('./UserChatPage'));
+const UserAccountPage = lazy(() => import('./UserAccountPage'));
+const UserBulletinPage = lazy(() => import('./UserBulletinPage'));
+const UserHadithPage = lazy(() => import('./UserHadithPage'));
+const UserQuranPage = lazy(() => import('./UserQuranPage'));
+const UserWrittenWorkPage = lazy(() => import('./UserWrittenWorkPage'));
+const UserGeneralBookPage = lazy(() => import('./UserGeneralBookPage'));
+const UserMateriDakwahPage = lazy(() => import('./UserMateriDakwahPage'));
+const UserKaryaAsatidzPage = lazy(() => import('./UserKaryaAsatidzPage'));
+const UserKhutbahJumatPage = lazy(() => import('./UserKhutbahJumatPage'));
 
 interface UserDashboardPageProps {
     user: User;
     onLogout: () => void;
     onUpdateUser: (user: User) => void;
+    settings: {
+        libraryName: string;
+        loginLogo: string;
+    };
 }
 
 const gridItems: UserDashboardGridItem[] = [
@@ -41,15 +48,15 @@ const gridItems: UserDashboardGridItem[] = [
     { id: 'bulletin', label: 'Buletin', icon: BulletinIcon },
     { id: 'quran', label: 'Al-Quran', icon: QuranIcon },
     { id: 'hadist', label: 'Hadist', icon: HadithIcon },
-    { id: 'karya-tulis', label: 'jurnal IAI Garut', icon: WritingIcon },
-    { id: 'buku-umum', label: 'Sekripsi Mahasiswa', icon: BookIcon },
+    { id: 'karya-tulis', label: 'Karya Tulis Santri', icon: WritingIcon },
+    { id: 'buku-umum', label: 'Karya Asatidz', icon: BookIcon },
     { id: 'materi-dakwah', label: 'Materi Dakwah', icon: FolderIcon },
     { id: 'karya-asatidz', label: 'Karya Ulama Persis', icon: GraduationCapIcon },
     { id: 'khutbah-jumat', label: "Khutbah Jum'at", icon: SermonIcon },
     { id: 'chat-admin', label: 'Chat admin', icon: ChatIcon },
 ];
 
-const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, onUpdateUser }) => {
+const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, onUpdateUser, settings }) => {
     const [currentDate, setCurrentDate] = useState({ day: '', date: '' });
     const [activePage, setActivePage] = useState('home');
     const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -115,13 +122,12 @@ const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, o
             <main className="flex-grow px-4 pb-24">
                 <div className="bg-white rounded-2xl shadow-md p-4 -mt-8 mx-2">
                     <div className="flex justify-between items-center text-dark-teal">
-                        <div className="text-left">
-                            <p className="font-bold text-lg">{currentDate.day}</p>
-                            <p className="text-sm">{currentDate.date}</p>
+                        <div className="text-left shrink-0">
+                            <p className="font-bold text-sm md:text-base">{currentDate.day}</p>
+                            <p className="text-xs text-gray-600">{currentDate.date}</p>
                         </div>
-                        <div className="text-right">
-                            <p className="font-bold text-lg">Literasi Membaca</p>
-                            <p className="text-sm">IAI PERSIS GARUT</p>
+                        <div className="text-right flex-1 pl-4">
+                            <p className="font-bold text-xs md:text-sm uppercase leading-tight">{settings.libraryName}</p>
                         </div>
                     </div>
                 </div>
@@ -202,38 +208,82 @@ const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, o
     const renderPage = () => {
         switch (activePage) {
             case 'radio':
-                return <UserRadioStreamingPage
-                    user={user}
-                    onBack={() => setActivePage('home')}
-                />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat live streaming..." />}>
+                        <UserRadioStreamingPage
+                            user={user}
+                            onBack={() => setActivePage('home')}
+                        />
+                    </Suspense>
+                );
             case 'chat':
-                return <UserChatPage
-                    user={user}
-                    onBack={() => setActivePage('home')}
-                />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat chat..." />}>
+                        <UserChatPage
+                            user={user}
+                            onBack={() => setActivePage('home')}
+                        />
+                    </Suspense>
+                );
             case 'account':
-                return <UserAccountPage
-                    user={user}
-                    onLogout={onLogout}
-                    onNavigate={handleNavigation}
-                    onUpdateUser={onUpdateUser}
-                />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat akun..." />}>
+                        <UserAccountPage
+                            user={user}
+                            onLogout={onLogout}
+                            onNavigate={handleNavigation}
+                            onUpdateUser={onUpdateUser}
+                        />
+                    </Suspense>
+                );
             case 'bulletin':
-                return <UserBulletinPage onBack={() => setActivePage('home')} />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat buletin..." />}>
+                        <UserBulletinPage onBack={() => setActivePage('home')} />
+                    </Suspense>
+                );
             case 'hadist':
-                return <UserHadithPage onBack={() => setActivePage('home')} />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat hadist..." />}>
+                        <UserHadithPage onBack={() => setActivePage('home')} />
+                    </Suspense>
+                );
             case 'quran':
-                return <UserQuranPage onBack={() => setActivePage('home')} />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat Al-Quran..." />}>
+                        <UserQuranPage onBack={() => setActivePage('home')} />
+                    </Suspense>
+                );
             case 'karya-tulis':
-                return <UserWrittenWorkPage onBack={() => setActivePage('home')} />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat karya tulis..." />}>
+                        <UserWrittenWorkPage onBack={() => setActivePage('home')} />
+                    </Suspense>
+                );
             case 'buku-umum':
-                return <UserGeneralBookPage onBack={() => setActivePage('home')} />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat buku umum..." />}>
+                        <UserGeneralBookPage onBack={() => setActivePage('home')} />
+                    </Suspense>
+                );
             case 'materi-dakwah':
-                return <UserMateriDakwahPage onBack={() => setActivePage('home')} />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat materi dakwah..." />}>
+                        <UserMateriDakwahPage onBack={() => setActivePage('home')} />
+                    </Suspense>
+                );
             case 'karya-asatidz':
-                return <UserKaryaAsatidzPage onBack={() => setActivePage('home')} />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat karya asatidz..." />}>
+                        <UserKaryaAsatidzPage onBack={() => setActivePage('home')} />
+                    </Suspense>
+                );
             case 'khutbah-jumat':
-                return <UserKhutbahJumatPage onBack={() => setActivePage('home')} />;
+                return (
+                    <Suspense fallback={<Loading message="Memuat khutbah jumat..." />}>
+                        <UserKhutbahJumatPage onBack={() => setActivePage('home')} />
+                    </Suspense>
+                );
             case 'home':
             default:
                 return renderMainContent();

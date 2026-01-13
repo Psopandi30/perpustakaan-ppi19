@@ -76,8 +76,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
             >
               <option value="">Pilih Status</option>
-              <option value="Mahasiswa">Mahasiswa</option>
-              <option value="Dosen/Pengajar">Dosen/Pengajar</option>
+              <option value="santri">Santri</option>
+              <option value="Asatidz">Asatidz</option>
               <option value="Staf">Staf</option>
             </select>
           </div>
@@ -113,7 +113,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
 
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              Username/NIM/NID/NIDN
+              Username/NIS/NISN
             </label>
             <input
               type="text"

@@ -15,9 +15,15 @@ const WrittenWorkPage: React.FC = () => {
     React.useEffect(() => {
         const loadWorks = async () => {
             setIsLoading(true);
-            const data = await db.fetchWrittenWorks();
-            setWorks(data);
-            setIsLoading(false);
+            try {
+                const data = await db.fetchWrittenWorks();
+                setWorks(data);
+            } catch (error) {
+                console.error('Error loading written works:', error);
+                setWorks([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadWorks();
     }, []);
@@ -71,7 +77,7 @@ const WrittenWorkPage: React.FC = () => {
                     <div className="flex items-center space-x-2">
                         <WritingIcon className="h-8 w-8 text-dark-teal" />
                         <h2 className="text-xl font-bold text-gray-800 uppercase tracking-wide">
-                            DAFTAR JURNAL
+                            DAFTAR KARYA TULIS SANTRI
                         </h2>
                     </div>
                     <button

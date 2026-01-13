@@ -1,4 +1,4 @@
-# Status Kesiapan Publikasi - Perpustakaan Digital IAI Persis Garut
+# Status Kesiapan Publikasi - Perpustakaan Digital PPI 19 Garut
 
 **Tanggal Assessment**: 2025-01-27  
 **Versi Aplikasi**: 1.0.0

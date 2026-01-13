@@ -1,6 +1,6 @@
-# Perpustakaan Digital IAI Persis Garut - Literasi Membaca
+# Perpustakaan Digital PPI 19 Garut - Literasi Membaca
 
-Aplikasi web untuk sistem perpustakaan digital IAI Persis Garut dengan fitur manajemen konten, live streaming, chat, dan notifikasi.
+Aplikasi web untuk sistem perpustakaan digital PPI 19 Garut dengan fitur manajemen konten, live streaming, chat, dan notifikasi.
 
 ## 🚀 Fitur Utama
 

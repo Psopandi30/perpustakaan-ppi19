@@ -8,29 +8,7 @@ interface UserRadioStreamingPageProps {
     onBack: () => void;
 }
 
-// Helper function to extract YouTube video ID and create an embed URL
-const getYoutubeEmbedUrl = (url: string): string | null => {
-    if (!url) return null;
-    let videoId = '';
-
-    // Matches:
-    // - https://www.youtube.com/watch?v=VIDEO_ID
-    // - https://youtu.be/VIDEO_ID
-    // - https://www.youtube.com/embed/VIDEO_ID
-    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-    const match = url.match(regex);
-
-    if (match && match[1]) {
-        videoId = match[1];
-    } else {
-        return null; // Return null if URL is not a valid YouTube link
-    }
-
-    // Mute is often required for autoplay to work in modern browsers.
-    // Adding the 'origin' parameter helps YouTube verify the embed request.
-    const origin = window.location.origin;
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&origin=${encodeURIComponent(origin)}`;
-};
+import { getYoutubeEmbedUrl } from '../utils/media';
 
 
 const UserRadioStreamingPage: React.FC<UserRadioStreamingPageProps> = ({ user, onBack }) => {

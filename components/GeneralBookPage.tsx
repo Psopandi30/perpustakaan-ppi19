@@ -16,9 +16,15 @@ const GeneralBookPage: React.FC = () => {
     React.useEffect(() => {
         const loadBooks = async () => {
             setIsLoading(true);
-            const data = await db.fetchGeneralBooks();
-            setBooks(data);
-            setIsLoading(false);
+            try {
+                const data = await db.fetchGeneralBooks();
+                setBooks(data);
+            } catch (error) {
+                console.error('Error loading general books:', error);
+                setBooks([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadBooks();
     }, []);
@@ -72,7 +78,7 @@ const GeneralBookPage: React.FC = () => {
                     <div className="flex items-center space-x-2">
                         <BookIcon className="h-8 w-8 text-dark-teal" />
                         <h2 className="text-xl font-bold text-gray-800 uppercase tracking-wide">
-                            DAFTAR SKRIPSI
+                            DAFTAR KARYA TULIS ASATIDZ
                         </h2>
                     </div>
                     <button

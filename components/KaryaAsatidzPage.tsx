@@ -18,9 +18,15 @@ const KaryaAsatidzPage: React.FC<KaryaAsatidzPageProps> = () => {
 
     const loadWorks = async () => {
         setIsLoading(true);
-        const data = await db.fetchKaryaAsatidz();
-        setWorks(data);
-        setIsLoading(false);
+        try {
+            const data = await db.fetchKaryaAsatidz();
+            setWorks(data);
+        } catch (error) {
+            console.error('Error loading karya asatidz:', error);
+            setWorks([]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {

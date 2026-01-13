@@ -90,8 +90,8 @@ const RegistrationModal: React.FC<RegistrationModalProps> = ({ onClose, onSave }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
               >
                 <option value="">Pilih Status</option>
-                <option value="Mahasiswa">Mahasiswa</option>
-                <option value="Dosen/Pengajar">Dosen/Pengajar</option>
+                <option value="Santri">Santri</option>
+                <option value="Asatidz">Asatidz</option>
                 <option value="Staf">Staf</option>
               </select>
             </div>

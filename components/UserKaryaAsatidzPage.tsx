@@ -84,11 +84,21 @@ const UserKaryaAsatidzPage: React.FC<UserKaryaAsatidzPageProps> = ({ onBack }) =
     useEffect(() => {
         const loadWorks = async () => {
             setIsLoading(true);
-            const data = await db.fetchKaryaAsatidz();
-            setWorks(data);
-            setIsLoading(false);
+            try {
+                const data = await db.fetchKaryaAsatidz();
+                setWorks(data);
+            } catch (error) {
+                console.error('Error loading karya asatidz:', error);
+                setWorks([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadWorks();
+        
+        // Poll for new karya asatidz every 30 seconds
+        const interval = setInterval(loadWorks, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     if (selectedWork) {

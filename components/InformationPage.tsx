@@ -17,9 +17,15 @@ const InformationPage: React.FC<InformationPageProps> = () => {
 
     const loadInformation = async () => {
         setIsLoading(true);
-        const data = await db.fetchInformation();
-        setInformation(data);
-        setIsLoading(false);
+        try {
+            const data = await db.fetchInformation();
+            setInformation(data);
+        } catch (error) {
+            console.error('Error loading information:', error);
+            setInformation([]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {

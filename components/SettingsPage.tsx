@@ -46,6 +46,11 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             e.target.value = '';
             return;
         }
+        if (file.size > 200 * 1024) {
+            setError('Ukuran logo terlalu besar. Maksimal 200KB.');
+            e.target.value = '';
+            return;
+        }
         try {
             const dataUrl = await readFileAsDataURL(file);
             setFormData(prev => ({ ...prev, loginLogo: dataUrl }));
@@ -63,6 +68,11 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
         if (!file) return;
         if (!isSupportedImage(file)) {
             setError('Format foto harus JPG atau PNG.');
+            e.target.value = '';
+            return;
+        }
+        if (file.size > 200 * 1024) {
+            setError('Ukuran foto terlalu besar. Maksimal 200KB.');
             e.target.value = '';
             return;
         }
@@ -129,7 +139,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
                         value={formData.libraryName}
                         onChange={handleChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
-                        placeholder="PERPUSTAKAAN DIGITAL IAI PERSIS GARUT"
+                        placeholder="PERPUSTAKAAN DIGITAL PPI 19 GARUT"
                     />
                 </div>
 

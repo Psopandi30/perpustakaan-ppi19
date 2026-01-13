@@ -15,7 +15,7 @@ const UserGeneralBookDetailPage: React.FC<{ work: GeneralBook; onBack: () => voi
             <header className="bg-dark-teal text-white p-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center space-x-2">
                     <BookIcon className="w-7 h-7" />
-                    <h1 className="text-xl font-semibold">DAFTAR SKRIPSI</h1>
+                    <h1 className="text-xl font-semibold">DAFTAR KARYA TULIS ASATIDZ</h1>
                 </div>
                 <button onClick={onBack} className="flex items-center space-x-1 hover:bg-white/10 p-2 rounded-md flex-shrink-0">
                     <ArrowLeftIcon className="w-6 h-6" />
@@ -84,11 +84,21 @@ const UserGeneralBookPage: React.FC<UserGeneralBookPageProps> = ({ onBack }) => 
     useEffect(() => {
         const loadWorks = async () => {
             setIsLoading(true);
-            const data = await db.fetchGeneralBooks();
-            setWorks(data);
-            setIsLoading(false);
+            try {
+                const data = await db.fetchGeneralBooks();
+                setWorks(data);
+            } catch (error) {
+                console.error('Error loading general books:', error);
+                setWorks([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadWorks();
+        
+        // Poll for new books every 30 seconds
+        const interval = setInterval(loadWorks, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     if (selectedWork) {
@@ -125,7 +135,7 @@ const UserGeneralBookPage: React.FC<UserGeneralBookPageProps> = ({ onBack }) => 
             <header className="bg-dark-teal text-white p-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center space-x-2">
                     <BookIcon className="w-7 h-7" />
-                    <h1 className="text-xl font-semibold">DAFTAR SKRIPSI</h1>
+                    <h1 className="text-xl font-semibold">DAFTAR KARYA TULIS ASATIDZ</h1>
                 </div>
             </header>
 

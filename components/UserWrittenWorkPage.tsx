@@ -15,7 +15,7 @@ const UserWrittenWorkDetailPage: React.FC<{ work: WrittenWork; onBack: () => voi
             <header className="bg-dark-teal text-white p-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center space-x-2">
                     <WritingIcon className="w-7 h-7" />
-                    <h1 className="text-xl font-semibold">DAFTAR JURNAL IAI</h1>
+                    <h1 className="text-xl font-semibold">DAFTAR KARYA TULIS</h1>
                 </div>
                 <button onClick={onBack} className="flex items-center space-x-1 hover:bg-white/10 p-2 rounded-md flex-shrink-0">
                     <ArrowLeftIcon className="w-6 h-6" />
@@ -84,11 +84,21 @@ const UserWrittenWorkPage: React.FC<UserWrittenWorkPageProps> = ({ onBack }) => 
     useEffect(() => {
         const loadWorks = async () => {
             setIsLoading(true);
-            const data = await db.fetchWrittenWorks();
-            setWorks(data);
-            setIsLoading(false);
+            try {
+                const data = await db.fetchWrittenWorks();
+                setWorks(data);
+            } catch (error) {
+                console.error('Error loading written works:', error);
+                setWorks([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadWorks();
+        
+        // Poll for new works every 30 seconds
+        const interval = setInterval(loadWorks, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     if (selectedWork) {
@@ -125,7 +135,7 @@ const UserWrittenWorkPage: React.FC<UserWrittenWorkPageProps> = ({ onBack }) => 
             <header className="bg-dark-teal text-white p-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center space-x-2">
                     <WritingIcon className="w-7 h-7" />
-                    <h1 className="text-xl font-semibold">DAFTAR JURNAL IAI</h1>
+                    <h1 className="text-xl font-semibold">DAFTAR KARYA TULIS</h1>
                 </div>
             </header>
 

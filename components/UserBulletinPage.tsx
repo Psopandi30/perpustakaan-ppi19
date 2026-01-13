@@ -84,11 +84,21 @@ const UserBulletinPage: React.FC<UserBulletinPageProps> = ({ onBack }) => {
     useEffect(() => {
         const loadBulletins = async () => {
             setIsLoading(true);
-            const data = await db.fetchBulletins();
-            setBulletins(data);
-            setIsLoading(false);
+            try {
+                const data = await db.fetchBulletins();
+                setBulletins(data);
+            } catch (error) {
+                console.error('Error loading bulletins:', error);
+                setBulletins([]);
+            } finally {
+                setIsLoading(false);
+            }
         };
         loadBulletins();
+        
+        // Poll for new bulletins every 30 seconds
+        const interval = setInterval(loadBulletins, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     if (selectedBulletin) {

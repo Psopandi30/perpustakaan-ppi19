@@ -31,6 +31,11 @@ const UserAccountPage: React.FC<UserAccountPageProps> = ({ user, onLogout, onNav
             e.target.value = '';
             return;
         }
+        if (file.size > 200 * 1024) {
+            setError('Ukuran foto terlalu besar. Maksimal 200KB.');
+            e.target.value = '';
+            return;
+        }
         try {
             const dataUrl = await readFileAsDataURL(file);
             const updatedUser = { ...user, photo: dataUrl };

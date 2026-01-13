@@ -19,9 +19,15 @@ const UserManagementPage: React.FC<UserManagementPageProps> = () => {
 
     const loadUsers = async () => {
         setIsLoading(true);
-        const data = await db.fetchUsers();
-        setUsers(data);
-        setIsLoading(false);
+        try {
+            const data = await db.fetchUsers();
+            setUsers(data);
+        } catch (error) {
+            console.error('Error loading users:', error);
+            setUsers([]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => {
