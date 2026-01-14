@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import type { Settings } from '../types';
 import { readFileAsDataURL, isSupportedImage } from '../utils/file';
 import { SettingsIcon, XIcon } from './icons/Icons';
+import ImageUpload from './ImageUpload';
+import './ImageUpload.css';
 import * as db from '../db';
 
 interface SettingsPageProps {
@@ -38,23 +40,13 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
         setSuccess(null);
     };
 
-    const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        if (!isSupportedImage(file)) {
-            setError('Format logo harus JPG atau PNG.');
-            e.target.value = '';
-            return;
-        }
-        if (file.size > 200 * 1024) {
-            setError('Ukuran logo terlalu besar. Maksimal 200KB.');
-            e.target.value = '';
-            return;
-        }
+    const handleLogoChange = async (file: File) => {
         try {
+            // Convert compressed file to dataURL for storage
             const dataUrl = await readFileAsDataURL(file);
             setFormData(prev => ({ ...prev, loginLogo: dataUrl }));
             setError(null);
+            setSuccess('Logo berhasil diunggah dan dikompres!');
         } catch (err) {
             if (process.env.NODE_ENV === 'development') {
                 console.error('Error reading logo file:', err);
@@ -186,13 +178,14 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Logo Login (JPG/PNG)
+                        Logo Login (JPG/PNG) - Auto-compression enabled
                     </label>
-                    <input
-                        type="file"
+                    <ImageUpload
+                        onUpload={handleLogoChange}
+                        type="icon"
+                        maxSizeMB={1}
                         accept="image/png,image/jpeg"
-                        onChange={handleLogoChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+                        className="mb-3"
                     />
                     {formData.loginLogo && (
                         <div className="mt-3">
