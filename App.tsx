@@ -24,9 +24,17 @@ const App: React.FC = () => {
     const initializeApp = async () => {
       // 1. Load Settings
       try {
-        const remoteSettings = await db.fetchSettings();
-        if (remoteSettings) {
-          setSettings(remoteSettings);
+        // Try localStorage first
+        const localSettings = localStorage.getItem('literasi_settings');
+        if (localSettings) {
+          const parsed = JSON.parse(localSettings);
+          setSettings(parsed);
+        } else {
+          // Fallback to database
+          const remoteSettings = await db.fetchSettings();
+          if (remoteSettings) {
+            setSettings(remoteSettings);
+          }
         }
       } catch (error) {
         console.error("Failed to load settings:", error);

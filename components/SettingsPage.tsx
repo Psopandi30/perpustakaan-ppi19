@@ -24,8 +24,18 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
     useEffect(() => {
         const loadSettings = async () => {
             setIsLoading(true);
-            const settings = await db.fetchSettings();
-            setFormData(settings);
+            
+            // Try localStorage first
+            const localSettings = localStorage.getItem('literasi_settings');
+            if (localSettings) {
+                const parsed = JSON.parse(localSettings);
+                setFormData(parsed);
+            } else {
+                // Fallback to db
+                const settings = await db.fetchSettings();
+                setFormData(settings);
+            }
+            
             setIsLoading(false);
         };
         loadSettings();
