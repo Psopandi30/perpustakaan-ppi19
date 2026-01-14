@@ -99,16 +99,24 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             return;
         }
 
-        const success = await db.updateSettings(formData);
-        if (success) {
-            setSuccess('Pengaturan berhasil disimpan!');
-            setConfirmPassword('');
-            // Reload halaman setelah 1 detik untuk menerapkan perubahan
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        } else {
-            setError('Gagal menyimpan pengaturan.');
+        try {
+            console.log('Saving settings:', formData);
+            const success = await db.updateSettings(formData);
+            console.log('Save result:', success);
+            
+            if (success) {
+                setSuccess('Pengaturan berhasil disimpan!');
+                setConfirmPassword('');
+                // Reload halaman setelah 1 detik untuk menerapkan perubahan
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                setError('Gagal menyimpan pengaturan. Silakan coba lagi.');
+            }
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            setError('Terjadi kesalahan saat menyimpan pengaturan.');
         }
     };
 
