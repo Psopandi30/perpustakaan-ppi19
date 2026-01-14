@@ -151,40 +151,32 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
-      {/* Header - Modern Minimal Design */}
-      <header className="bg-gradient-to-r from-teal-700 via-teal-600 to-teal-700 shadow-lg sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
+      {/* Header - Clean Minimal Design */}
+      <header className="bg-white shadow-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-3">
           <div className="flex justify-between items-center gap-4">
             {/* Logo + Title - Left Side */}
-            <div className="flex items-center gap-4 flex-1">
+            <div className="flex items-center gap-3 flex-1">
               {settings.loginLogo && (
-                <div className="relative">
-                  <img
-                    src={settings.loginLogo}
-                    alt="Logo"
-                    className="w-12 h-12 rounded-xl object-cover shadow-lg border-2 border-white/20"
-                  />
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-brand-yellow rounded-full shadow-lg"></div>
-                </div>
+                <img
+                  src={settings.loginLogo}
+                  alt="Logo"
+                  className="w-10 h-10 rounded-lg object-cover shadow-sm"
+                />
               )}
-              <div className="flex flex-col">
-                <h1 className="text-lg md:text-xl font-bold text-white uppercase tracking-wide leading-tight drop-shadow-lg">
-                  {settings.libraryName}
-                </h1>
-                <p className="text-xs text-white/80 font-medium">
-                  Perpustakaan Digital Modern
-                </p>
-              </div>
+              <h1 className="text-base md:text-lg font-semibold text-gray-800 uppercase tracking-wide">
+                {settings.libraryName}
+              </h1>
             </div>
             
             {/* Login Button - Right Side */}
             <button
               onClick={onLoginClick}
-              className="bg-white/10 backdrop-blur-sm text-white px-6 py-2.5 rounded-xl text-sm font-semibold shadow-lg hover:bg-white/20 hover:shadow-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap border border-white/20"
+              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 whitespace-nowrap"
               title="Login"
             >
               <UserIcon className="w-4 h-4" />
-              <span>Masuk Akun</span>
+              <span>Masuk</span>
             </button>
           </div>
         </div>
