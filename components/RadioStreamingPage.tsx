@@ -5,11 +5,7 @@ import { ChatBubbleIcon, SendIcon, UserCircleIcon, PlayIcon, PauseIcon, StopIcon
 import EditRadioStreamModal from './EditRadioStreamModal';
 import * as db from '../db';
 
-interface RadioStreamingPageProps {
-    // Props removed as we fetch internally
-}
-
-const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
+const RadioStreamingPage: React.FC = () => {
     const [radioStreamData, setRadioStreamData] = useState<RadioStreamData>({
         title: 'Loading...',
         youtubeLink: '',
@@ -21,20 +17,20 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
     const chatEndRef = useRef<HTMLDivElement>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const loadData = async () => {
+    const loadData = React.useCallback(async () => {
         const data = await db.fetchRadioStreamData();
         setRadioStreamData(data);
-    };
+    }, []);
 
     useEffect(() => {
         loadData();
-        
+
         // Don't poll if modal is open to avoid overwriting form data
         if (isEditModalOpen) return;
 
         const interval = setInterval(loadData, 5000);
         return () => clearInterval(interval);
-    }, [isEditModalOpen]);
+    }, [isEditModalOpen, loadData]);
 
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
