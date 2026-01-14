@@ -15,7 +15,7 @@ export default defineConfig({
       includeAssets: ['pwa-icon.png'],
       manifest: {
         name: 'Perpustakaan Digital PPI 19 Garut',
-        short_name: 'Literasi PPI 19',
+        short_name: 'Perpustakaan PPI 19',
         description: 'Sistem Literasi Membaca untuk PPI 19 Garut',
         theme_color: '#1A3A3A',
         background_color: '#ffffff',
