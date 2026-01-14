@@ -152,7 +152,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Header - Clean Minimal Design */}
-      <header className="bg-green-800 shadow-sm sticky top-0 z-50">
+      <header className="bg-slate-800 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex justify-between items-center gap-4">
             {/* Logo + Title - Left Side */}
@@ -161,12 +161,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                 <img
                   src={settings.loginLogo}
                   alt="Logo"
-                  className="w-8 h-8 md:w-10 md:h-10 rounded-lg object-cover shadow-sm border border-white/10 flex-shrink-0"
+                  className="w-8 h-8 md:w-10 md:h-10 rounded-lg object-cover shadow-sm border border-white/20 flex-shrink-0"
                 />
               )}
               <h1 className="text-xs md:text-sm font-medium text-white uppercase tracking-wide leading-tight">
                 <span className="hidden sm:inline">{settings.libraryName}</span>
-                <span className="sm:hidden">PERPUSTAKAAN PPI 19</span>
+                <span className="sm:hidden">PPI 19</span>
               </h1>
             </div>
             
