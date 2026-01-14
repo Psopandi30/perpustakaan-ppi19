@@ -152,31 +152,31 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Header - Clean Minimal Design */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
+      <header className="bg-green-800 shadow-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3">
           <div className="flex justify-between items-center gap-4">
             {/* Logo + Title - Left Side */}
-            <div className="flex items-center gap-3 flex-1">
+            <div className="flex items-center gap-2 md:gap-3 flex-1">
               {settings.loginLogo && (
                 <img
                   src={settings.loginLogo}
                   alt="Logo"
-                  className="w-10 h-10 rounded-lg object-cover shadow-sm"
+                  className="w-8 h-8 md:w-10 md:h-10 rounded-lg object-cover shadow-sm border border-white/10 flex-shrink-0"
                 />
               )}
-              <h1 className="text-base md:text-lg font-semibold text-gray-800 uppercase tracking-wide">
-                {settings.libraryName}
+              <h1 className="text-xs md:text-sm font-medium text-white uppercase tracking-wide leading-tight">
+                <span className="hidden sm:inline">{settings.libraryName}</span>
+                <span className="sm:hidden">PERPUSTAKAAN DIGITAL PPI 19</span>
               </h1>
             </div>
             
             {/* Login Button - Right Side */}
             <button
               onClick={onLoginClick}
-              className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors flex items-center gap-2 whitespace-nowrap"
+              className="bg-white/10 text-white p-2 md:p-2.5 rounded-lg hover:bg-white/20 transition-colors flex-shrink-0"
               title="Login"
             >
-              <UserIcon className="w-4 h-4" />
-              <span>Masuk</span>
+              <UserIcon className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </div>
         </div>
