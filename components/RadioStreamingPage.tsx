@@ -28,10 +28,13 @@ const RadioStreamingPage: React.FC<RadioStreamingPageProps> = () => {
 
     useEffect(() => {
         loadData();
-        // Optional: Poll for new messages every few seconds
+        
+        // Don't poll if modal is open to avoid overwriting form data
+        if (isEditModalOpen) return;
+
         const interval = setInterval(loadData, 5000);
         return () => clearInterval(interval);
-    }, []);
+    }, [isEditModalOpen]);
 
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });

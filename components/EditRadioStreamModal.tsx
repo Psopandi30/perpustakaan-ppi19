@@ -13,9 +13,7 @@ const EditRadioStreamModal: React.FC<EditRadioStreamModalProps> = ({ data, onClo
   const [formData, setFormData] = useState(data);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setFormData(data);
-  }, [data]);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
