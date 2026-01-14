@@ -164,12 +164,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                   className="w-8 h-8 md:w-10 md:h-10 rounded-lg object-cover shadow-sm border border-white/20 flex-shrink-0"
                 />
               )}
-              <h1 className="text-xs md:text-sm font-medium text-white uppercase tracking-wide leading-tight">
-                <span className="hidden sm:inline">{settings.libraryName}</span>
-                <span className="sm:hidden">PPI 19</span>
-              </h1>
+              <span className="text-[10px] mobile-s:text-xs sm:text-sm md:text-sm leading-tight text-white uppercase tracking-wide">
+                {settings.libraryName}
+              </span>
             </div>
-            
+
             {/* Login Button - Right Side */}
             <button
               onClick={onLoginClick}
