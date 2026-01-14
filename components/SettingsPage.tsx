@@ -101,19 +101,26 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
 
         try {
             console.log('Saving settings:', formData);
-            const success = await db.updateSettings(formData);
-            console.log('Save result:', success);
             
-            if (success) {
-                setSuccess('Pengaturan berhasil disimpan!');
-                setConfirmPassword('');
-                // Reload halaman setelah 1 detik untuk menerapkan perubahan
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                setError('Gagal menyimpan pengaturan. Silakan coba lagi.');
-            }
+            // Force use localStorage for now
+            const settingsToSave = {
+                libraryName: formData.libraryName,
+                adminPassword: formData.adminPassword,
+                loginLogo: formData.loginLogo,
+                adminPhoto: formData.adminPhoto
+            };
+            
+            localStorage.setItem('literasi_settings', JSON.stringify(settingsToSave));
+            
+            console.log('Settings saved to localStorage successfully');
+            setSuccess('Pengaturan berhasil disimpan!');
+            setConfirmPassword('');
+            
+            // Reload halaman setelah 1 detik untuk menerapkan perubahan
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+            
         } catch (error) {
             console.error('Error saving settings:', error);
             setError('Terjadi kesalahan saat menyimpan pengaturan.');
