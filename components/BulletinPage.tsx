@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import type { Bulletin } from '../types';
 import { BulletinIcon, PencilIcon, TrashIcon, PlusIcon } from './icons/Icons';
 import { resolveImageUrl } from '../utils/media';
@@ -46,8 +47,9 @@ const BulletinPage: React.FC<BulletinPageProps> = () => {
                 timestamp: new Date(),
                 isRead: false,
             });
+            toast.success('Buletin berhasil ditambahkan.');
         } else {
-            alert('Gagal menambahkan buletin');
+            toast.error('Gagal menambahkan buletin');
         }
     };
 
@@ -56,8 +58,9 @@ const BulletinPage: React.FC<BulletinPageProps> = () => {
             const success = await db.deleteBulletin(id);
             if (success) {
                 setBulletins(bulletins.filter(bulletin => bulletin.id !== id));
+                toast.success('Buletin berhasil dihapus.');
             } else {
-                alert('Gagal menghapus buletin');
+                toast.error('Gagal menghapus buletin');
             }
         }
     };
@@ -67,8 +70,9 @@ const BulletinPage: React.FC<BulletinPageProps> = () => {
         if (success) {
             setBulletins(bulletins.map(b => b.id === updatedBulletin.id ? updatedBulletin : b));
             setEditingBulletin(null);
+            toast.success('Buletin berhasil diperbarui.');
         } else {
-            alert('Gagal mengupdate buletin');
+            toast.error('Gagal mengupdate buletin');
         }
     };
 
