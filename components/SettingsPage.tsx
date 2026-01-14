@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import type { Settings } from '../types';
 import { readFileAsDataURL, isSupportedImage } from '../utils/file';
 import { SettingsIcon, XIcon } from './icons/Icons';
-import ImageUpload from './ImageUpload';
-import './ImageUpload.css';
 import * as db from '../db';
 
 interface SettingsPageProps {
@@ -40,13 +38,19 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
         setSuccess(null);
     };
 
-    const handleLogoChange = async (file: File) => {
+    const handleLogoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        if (!isSupportedImage(file)) {
+            setError('Format logo harus JPG atau PNG.');
+            e.target.value = '';
+            return;
+        }
         try {
-            // Convert compressed file to dataURL for storage
             const dataUrl = await readFileAsDataURL(file);
             setFormData(prev => ({ ...prev, loginLogo: dataUrl }));
             setError(null);
-            setSuccess('Logo berhasil diunggah dan dikompres!');
+            setSuccess('Logo berhasil diunggah!');
         } catch (err) {
             if (process.env.NODE_ENV === 'development') {
                 console.error('Error reading logo file:', err);
@@ -95,21 +99,16 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             return;
         }
 
-        try {
-            const success = await db.updateSettings(formData);
-            if (success) {
-                setSuccess('Pengaturan berhasil disimpan!');
-                setConfirmPassword('');
-                // Reload halaman setelah 1 detik untuk menerapkan perubahan
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1000);
-            } else {
-                setError('Gagal menyimpan pengaturan. Silakan coba lagi.');
-            }
-        } catch (error) {
-            console.error('Error saving settings:', error);
-            setError('Terjadi kesalahan saat menyimpan pengaturan.');
+        const success = await db.updateSettings(formData);
+        if (success) {
+            setSuccess('Pengaturan berhasil disimpan!');
+            setConfirmPassword('');
+            // Reload halaman setelah 1 detik untuk menerapkan perubahan
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            setError('Gagal menyimpan pengaturan.');
         }
     };
 
@@ -183,21 +182,18 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
 
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Logo Login (JPG/PNG) - Auto-compression enabled
+                        Logo Login (JPG/PNG)
                     </label>
                     <input
                         type="file"
                         accept="image/png,image/jpeg"
-                        onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleLogoChange(file);
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal text-sm"
+                        onChange={handleLogoChange}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
                     />
                     {formData.loginLogo && (
-                        <div className="mt-2">
-                            <p className="text-xs text-gray-600 mb-1">Preview Logo:</p>
-                            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-md border border-gray-200 overflow-hidden">
+                        <div className="mt-3">
+                            <p className="text-sm text-gray-600 mb-2">Preview Logo:</p>
+                            <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center shadow-md border border-gray-200 overflow-hidden">
                                 <img
                                     src={formData.loginLogo}
                                     alt="Logo Preview"
@@ -216,12 +212,12 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
                         type="file"
                         accept="image/png,image/jpeg"
                         onChange={handlePhotoChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal text-sm"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
                     />
                     {formData.adminPhoto && (
-                        <div className="mt-2">
-                            <p className="text-xs text-gray-600 mb-1">Preview Foto:</p>
-                            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center shadow-md border border-gray-200 overflow-hidden">
+                        <div className="mt-3">
+                            <p className="text-sm text-gray-600 mb-2">Preview Foto:</p>
+                            <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center shadow-md border-2 border-gray-300 overflow-hidden">
                                 <img
                                     src={formData.adminPhoto}
                                     alt="Foto Admin Preview"
