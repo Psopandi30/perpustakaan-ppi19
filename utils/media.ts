@@ -44,7 +44,7 @@ export const getYoutubeEmbedUrl = (url: string, autoplay: boolean = true, mute: 
     const muteParam = mute ? '1' : '0';
     const autoplayParam = autoplay ? '1' : '0';
 
-    return `https://www.youtube.com/embed/${videoId}?autoplay=${autoplayParam}&mute=${muteParam}&origin=${encodeURIComponent(origin)}`;
+    return `https://www.youtube.com/embed/${videoId}?autoplay=${autoplayParam}&mute=${muteParam}&controls=0&disablekb=1&modestbranding=1&origin=${encodeURIComponent(origin)}`;
 };
 
 
