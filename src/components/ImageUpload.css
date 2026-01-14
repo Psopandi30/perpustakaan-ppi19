@@ -1,0 +1,142 @@
+.image-upload {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.upload-area {
+  border: 2px dashed #e5e7eb;
+  border-radius: 8px;
+  padding: 2rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-area:hover {
+  border-color: #3b82f6;
+  background-color: #f8fafc;
+}
+
+.upload-area.uploading {
+  border-color: #10b981;
+  background-color: #ecfdf5;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-icon {
+  width: 48px;
+  height: 48px;
+  color: #9ca3af;
+}
+
+.upload-hint {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.file-input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.preview-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.preview-image {
+  max-width: 100%;
+  max-height: 300px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.change-button {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.3s ease;
+}
+
+.change-button:hover {
+  background-color: #2563eb;
+}
+
+.upload-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f0f9ff;
+  border-radius: 6px;
+  color: #0369a1;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #e5e7eb;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.upload-error {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #dc2626;
+  font-size: 0.875rem;
+}
+
+.upload-error p {
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .image-upload {
+    max-width: 100%;
+  }
+  
+  .upload-area {
+    padding: 1.5rem;
+    min-height: 150px;
+  }
+  
+  .preview-image {
+    max-height: 200px;
+  }
+}
