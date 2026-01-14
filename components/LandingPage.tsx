@@ -166,7 +166,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
               )}
               <h1 className="text-xs md:text-sm font-medium text-white uppercase tracking-wide leading-tight">
                 <span className="hidden sm:inline">{settings.libraryName}</span>
-                <span className="sm:hidden">PERPUSTAKAAN DIGITAL PPI 19</span>
+                <span className="sm:hidden">PERPUSTAKAAN PPI 19</span>
               </h1>
             </div>
             
