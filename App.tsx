@@ -29,16 +29,26 @@ const App: React.FC = () => {
         if (localSettings) {
           const parsed = JSON.parse(localSettings);
           setSettings(parsed);
+          console.log('Loaded settings from localStorage:', parsed);
         } else {
           // Fallback to database
           const remoteSettings = await db.fetchSettings();
           if (remoteSettings) {
             setSettings(remoteSettings);
+            console.log('Loaded settings from database:', remoteSettings);
           }
         }
       } catch (error) {
         console.error("Failed to load settings:", error);
       }
+
+      // Listen for settings updates
+      const handleSettingsUpdate = (event: CustomEvent) => {
+        console.log('Settings updated event:', event.detail);
+        setSettings(event.detail);
+      };
+
+      window.addEventListener('settingsUpdated', handleSettingsUpdate as EventListener);
 
       // 2. Restore and Validate Session
       const savedSession = localStorage.getItem('literasi_session');

@@ -123,13 +123,13 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             localStorage.setItem('literasi_settings', JSON.stringify(settingsToSave));
             
             console.log('Settings saved to localStorage successfully');
+            console.log('Current localStorage:', localStorage.getItem('literasi_settings'));
+            
             setSuccess('Pengaturan berhasil disimpan!');
             setConfirmPassword('');
             
-            // Reload halaman setelah 1 detik untuk menerapkan perubahan
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
+            // Update App state immediately without reload
+            window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: settingsToSave }));
             
         } catch (error) {
             console.error('Error saving settings:', error);
