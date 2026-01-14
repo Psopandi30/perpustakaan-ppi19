@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import type { KhutbahJumat } from '../types';
 import { SermonIcon, PencilIcon, TrashIcon, PlusIcon } from './icons/Icons';
 import { resolveImageUrl } from '../utils/media';
@@ -45,8 +46,9 @@ const KhutbahJumatPage: React.FC<KhutbahJumatPageProps> = () => {
                 timestamp: new Date(),
                 isRead: false,
             });
+            toast.success("Khutbah Jum'at berhasil ditambahkan.");
         } else {
-            alert("Gagal menambahkan khutbah jum'at");
+            toast.error("Gagal menambahkan khutbah jum'at");
         }
     };
 
@@ -55,8 +57,9 @@ const KhutbahJumatPage: React.FC<KhutbahJumatPageProps> = () => {
             const success = await db.deleteKhutbahJumat(id);
             if (success) {
                 setWorks(works.filter(work => work.id !== id));
+                toast.success("Khutbah Jum'at berhasil dihapus.");
             } else {
-                alert("Gagal menghapus khutbah jum'at");
+                toast.error("Gagal menghapus khutbah jum'at");
             }
         }
     };
@@ -66,8 +69,9 @@ const KhutbahJumatPage: React.FC<KhutbahJumatPageProps> = () => {
         if (success) {
             setWorks(works.map(w => w.id === updatedWork.id ? updatedWork : w));
             setEditingWork(null);
+            toast.success("Khutbah Jum'at berhasil diperbarui.");
         } else {
-            alert("Gagal mengupdate khutbah jum'at");
+            toast.error("Gagal mengupdate khutbah jum'at");
         }
     };
 

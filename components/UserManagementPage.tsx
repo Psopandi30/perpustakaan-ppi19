@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import type { User } from '../types';
 import { PlusIcon, CheckCircleIcon, PencilIcon, TrashIcon } from './icons/Icons';
 import AddUserModal from './AddUserModal';
@@ -45,8 +46,9 @@ const UserManagementPage: React.FC<UserManagementPageProps> = () => {
         if (addedUser) {
             setUsers([...users, addedUser]);
             setIsAddModalOpen(false);
+            toast.success('User berhasil ditambahkan.');
         } else {
-            alert('Gagal menambahkan user');
+            toast.error('Gagal menambahkan user');
         }
     };
 
@@ -55,8 +57,9 @@ const UserManagementPage: React.FC<UserManagementPageProps> = () => {
         if (success) {
             setUsers(users.map(u => u.id === updatedUser.id ? updatedUser : u));
             setEditingUser(null);
+            toast.success('User berhasil diupdate.');
         } else {
-            alert('Gagal mengupdate user');
+            toast.error('Gagal mengupdate user');
         }
     };
 
@@ -65,8 +68,9 @@ const UserManagementPage: React.FC<UserManagementPageProps> = () => {
             const success = await db.deleteUser(userId);
             if (success) {
                 setUsers(users.filter(u => u.id !== userId));
+                toast.success('User berhasil dihapus.');
             } else {
-                alert('Gagal menghapus user');
+                toast.error('Gagal menghapus user');
             }
         }
     };
@@ -76,8 +80,9 @@ const UserManagementPage: React.FC<UserManagementPageProps> = () => {
         const success = await db.updateUser(updatedUser);
         if (success) {
             setUsers(users.map(u => u.id === user.id ? updatedUser : u));
+            toast.success('User berhasil disetujui.');
         } else {
-            alert('Gagal menyetujui user');
+            toast.error('Gagal menyetujui user');
         }
     };
 

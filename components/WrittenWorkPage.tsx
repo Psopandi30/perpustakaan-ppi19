@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { toast } from 'react-hot-toast';
 import type { WrittenWork } from '../types';
 import { WritingIcon, PencilIcon, TrashIcon, PlusIcon } from './icons/Icons';
 import { resolveImageUrl } from '../utils/media';
@@ -40,8 +41,9 @@ const WrittenWorkPage: React.FC = () => {
                 timestamp: new Date(),
                 isRead: false,
             });
+            toast.success('Jurnal berhasil ditambahkan dan notifikasi terkirim.');
         } else {
-            alert('Gagal menambahkan jurnal. Silakan coba lagi.');
+            toast.error('Gagal menambahkan jurnal. Silakan coba lagi.');
         }
     };
 
@@ -50,8 +52,9 @@ const WrittenWorkPage: React.FC = () => {
             const success = await db.deleteWrittenWork(id);
             if (success) {
                 setWorks(works.filter(work => work.id !== id));
+                toast.success('Jurnal berhasil dihapus.');
             } else {
-                alert('Gagal menghapus jurnal.');
+                toast.error('Gagal menghapus jurnal.');
             }
         }
     };
@@ -61,8 +64,9 @@ const WrittenWorkPage: React.FC = () => {
         if (success) {
             setWorks(works.map(w => w.id === updatedWork.id ? updatedWork : w));
             setEditingWork(null);
+            toast.success('Jurnal berhasil diperbarui.');
         } else {
-            alert('Gagal mengupdate jurnal.');
+            toast.error('Gagal mengupdate jurnal.');
         }
     };
 
@@ -157,23 +161,23 @@ const WrittenWorkPage: React.FC = () => {
                 </div>
             </div>
 
-            { isAddModalOpen && (
+            {isAddModalOpen && (
                 <AddWrittenWorkModal
                     onClose={() => setIsAddModalOpen(false)}
                     onSave={handleAddWork}
                 />
             )
-}
-{
-    editingWork && (
-        <EditWrittenWorkModal
-            work={editingWork}
-            onClose={() => setEditingWork(null)}
-            onSave={handleUpdateWork}
-        />
-    )
-}
-<style>{`
+            }
+            {
+                editingWork && (
+                    <EditWrittenWorkModal
+                        work={editingWork}
+                        onClose={() => setEditingWork(null)}
+                        onSave={handleUpdateWork}
+                    />
+                )
+            }
+            <style>{`
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 10px;
                     height: 10px;

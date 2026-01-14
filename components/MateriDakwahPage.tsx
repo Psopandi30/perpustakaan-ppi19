@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import type { MateriDakwah } from '../types';
 import { FolderIcon, PencilIcon, TrashIcon, PlusIcon } from './icons/Icons';
 import { resolveImageUrl } from '../utils/media';
@@ -45,8 +46,9 @@ const MateriDakwahPage: React.FC<MateriDakwahPageProps> = () => {
                 timestamp: new Date(),
                 isRead: false,
             });
+            toast.success('Materi dakwah berhasil ditambahkan.');
         } else {
-            alert('Gagal menambahkan materi');
+            toast.error('Gagal menambahkan materi');
         }
     };
 
@@ -55,8 +57,9 @@ const MateriDakwahPage: React.FC<MateriDakwahPageProps> = () => {
             const success = await db.deleteMateriDakwah(id);
             if (success) {
                 setWorks(works.filter(work => work.id !== id));
+                toast.success('Materi dakwah berhasil dihapus.');
             } else {
-                alert('Gagal menghapus materi');
+                toast.error('Gagal menghapus materi');
             }
         }
     };
@@ -66,8 +69,9 @@ const MateriDakwahPage: React.FC<MateriDakwahPageProps> = () => {
         if (success) {
             setWorks(works.map(w => w.id === updatedWork.id ? updatedWork : w));
             setEditingWork(null);
+            toast.success('Materi dakwah berhasil diperbarui.');
         } else {
-            alert('Gagal mengupdate materi');
+            toast.error('Gagal mengupdate materi');
         }
     };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import * as db from '../db';
 import type { Banner } from '../types';
 import { resolveImageUrl } from '../utils/media';
@@ -42,14 +43,14 @@ const BannerPage: React.FC = () => {
             setFormData(prev => ({ ...prev, imageUrl: dataUrl }));
         } catch (error) {
             console.error('Error reading image file:', error);
-            alert('Gagal membaca file gambar.');
+            toast.error('Gagal membaca file gambar.');
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.judul || !formData.imageUrl) {
-            alert('Judul dan gambar wajib diisi.');
+            toast.error('Judul dan gambar wajib diisi.');
             return;
         }
 
@@ -60,8 +61,9 @@ const BannerPage: React.FC = () => {
                 setEditingBanner(null);
                 setIsAddModalOpen(false);
                 setFormData({ judul: '', imageUrl: '', linkUrl: '', urutan: 1, isActive: true });
+                toast.success('Banner berhasil diperbarui!');
             } else {
-                alert('Gagal mengupdate banner.');
+                toast.error('Gagal mengupdate banner.');
             }
         } else {
             const added = await db.addBanner(formData);
@@ -69,8 +71,9 @@ const BannerPage: React.FC = () => {
                 await loadBanners();
                 setIsAddModalOpen(false);
                 setFormData({ judul: '', imageUrl: '', linkUrl: '', urutan: 1, isActive: true });
+                toast.success('Banner berhasil ditambahkan!');
             } else {
-                alert('Gagal menambahkan banner.');
+                toast.error('Gagal menambahkan banner.');
             }
         }
     };
@@ -92,8 +95,9 @@ const BannerPage: React.FC = () => {
             const success = await db.deleteBanner(id);
             if (success) {
                 await loadBanners();
+                toast.success('Banner berhasil dihapus!');
             } else {
-                alert('Gagal menghapus banner.');
+                toast.error('Gagal menghapus banner.');
             }
         }
     };
@@ -175,15 +179,7 @@ const BannerPage: React.FC = () => {
                                     <img src={formData.imageUrl} alt="Preview" className="mt-2 w-full h-32 object-cover rounded" />
                                 )}
                             </div>
-                            <div className="mb-4">
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Link URL (Opsional)</label>
-                                <input
-                                    type="url"
-                                    value={formData.linkUrl}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, linkUrl: e.target.value }))}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                                />
-                            </div>
+
                             <div className="mb-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">Urutan</label>
                                 <input

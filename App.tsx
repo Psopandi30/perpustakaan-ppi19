@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import { Toaster, toast } from 'react-hot-toast';
 import LandingPage from './components/LandingPage';
 import LoginPage from './components/LoginPage';
 import Loading from './components/Loading';
@@ -74,7 +75,7 @@ const App: React.FC = () => {
                 console.warn("User session invalid or account inactive. Logging out.");
                 setLoggedInUser(null);
                 localStorage.removeItem('literasi_session');
-                alert("Sesi anda telah berakhir atau akun dinonaktifkan oleh admin.");
+                toast.error("Sesi anda telah berakhir atau akun dinonaktifkan oleh admin.");
               }
             } catch (err) {
               console.error("Error validating user session:", err);
@@ -110,6 +111,7 @@ const App: React.FC = () => {
           setLoggedInUser('admin');
           // Save admin session to localStorage
           localStorage.setItem('literasi_session', JSON.stringify({ type: 'admin' }));
+          toast.success("Login berhasil! Selamat datang Admin.");
           return true;
         }
         return false;
@@ -119,6 +121,7 @@ const App: React.FC = () => {
         if (pass === settings.adminPassword) {
           setLoggedInUser('admin');
           localStorage.setItem('literasi_session', JSON.stringify({ type: 'admin' }));
+          toast.success("Login berhasil! Selamat datang Admin.");
           return true;
         }
         return false;
@@ -133,6 +136,7 @@ const App: React.FC = () => {
         setLoggedInUser(user);
         // Save user session to localStorage
         localStorage.setItem('literasi_session', JSON.stringify({ type: 'user', user }));
+        toast.success(`Selamat datang, ${user.namaLengkap}!`);
         return true;
       }
     } catch (error) {
@@ -145,11 +149,12 @@ const App: React.FC = () => {
     setLoggedInUser(null);
     // Clear session from localStorage
     localStorage.removeItem('literasi_session');
+    toast.success("Logout berhasil.");
   }, []);
 
   const handleRegister = async (newUser: Omit<User, 'id' | 'akunStatus'>) => {
     await db.addUser({ ...newUser, akunStatus: 'Tidak aktif' });
-    alert("Registrasi berhasil! Silakan hubungi admin untuk aktivasi akun.");
+    toast.success("Registrasi berhasil! Silakan hubungi admin untuk aktivasi akun.");
   };
 
   const renderContent = () => {
@@ -194,6 +199,7 @@ const App: React.FC = () => {
 
   return (
     <div className="antialiased">
+      <Toaster position="top-center" reverseOrder={false} />
       {renderContent()}
     </div>
   );

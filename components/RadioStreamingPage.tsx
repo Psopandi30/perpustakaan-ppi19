@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import type { ChatMessage, RadioStreamData } from '../types';
 import { ChatBubbleIcon, SendIcon, UserCircleIcon, PlayIcon, PauseIcon, StopIcon, PencilIcon, TrashIcon } from './icons/Icons';
 import EditRadioStreamModal from './EditRadioStreamModal';
@@ -80,8 +81,9 @@ const RadioStreamingPage: React.FC = () => {
             setIsEditModalOpen(false);
             // Reload data to reflect changes
             await loadData();
+            toast.success('Pengaturan live streaming disimpan.');
         } else {
-            alert('Gagal menyimpan perubahan. Silakan coba lagi.');
+            toast.error('Gagal menyimpan perubahan. Silakan coba lagi.');
         }
     };
 
@@ -110,11 +112,15 @@ const RadioStreamingPage: React.FC = () => {
                 timestamp: new Date(),
                 isRead: false
             });
+            toast.success('Live streaming dimulai! Notifikasi terkirim.');
+        } else {
+            toast.success('Live streaming dijeda/dihentikan.');
         }
     }
 
     const stopPublish = async () => {
         await handleUpdateField('isPublished', false);
+        toast.success('Live streaming dihentikan.');
     }
 
     const handleClearChat = async () => {
@@ -123,9 +129,9 @@ const RadioStreamingPage: React.FC = () => {
             const success = await db.clearRadioChatMessages();
             if (success) {
                 setRadioStreamData(prev => ({ ...prev, messages: [] }));
-                alert("Chat berhasil dihapus!");
+                toast.success("Chat berhasil dihapus!");
             } else {
-                alert("Gagal menghapus chat. Silakan coba lagi.");
+                toast.error("Gagal menghapus chat. Silakan coba lagi.");
             }
         }
     }

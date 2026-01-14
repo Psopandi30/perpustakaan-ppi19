@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import type { KaryaAsatidz } from '../types';
 import { GraduationCapIcon, PencilIcon, TrashIcon, PlusIcon } from './icons/Icons';
 import { resolveImageUrl } from '../utils/media';
@@ -45,8 +46,9 @@ const KaryaAsatidzPage: React.FC<KaryaAsatidzPageProps> = () => {
                 timestamp: new Date(),
                 isRead: false,
             });
+            toast.success('Karya ulama persis berhasil ditambahkan.');
         } else {
-            alert('Gagal menambahkan karya');
+            toast.error('Gagal menambahkan karya');
         }
     };
 
@@ -55,8 +57,9 @@ const KaryaAsatidzPage: React.FC<KaryaAsatidzPageProps> = () => {
             const success = await db.deleteKaryaAsatidz(id);
             if (success) {
                 setWorks(works.filter(work => work.id !== id));
+                toast.success('Karya ulama persis berhasil dihapus.');
             } else {
-                alert('Gagal menghapus karya');
+                toast.error('Gagal menghapus karya');
             }
         }
     };
@@ -66,8 +69,9 @@ const KaryaAsatidzPage: React.FC<KaryaAsatidzPageProps> = () => {
         if (success) {
             setWorks(works.map(w => w.id === updatedWork.id ? updatedWork : w));
             setEditingWork(null);
+            toast.success('Karya ulama persis berhasil diperbarui.');
         } else {
-            alert('Gagal mengupdate karya');
+            toast.error('Gagal mengupdate karya');
         }
     };
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import type { Information } from '../types';
 import { InfoIcon, PencilIcon, TrashIcon, PlusIcon } from './icons/Icons';
 import EditInformationModal from './EditInformationModal';
@@ -44,8 +45,9 @@ const InformationPage: React.FC<InformationPageProps> = () => {
                 timestamp: new Date(),
                 isRead: false,
             });
+            toast.success('Informasi berhasil ditambahkan.');
         } else {
-            alert('Gagal menambahkan informasi');
+            toast.error('Gagal menambahkan informasi');
         }
     };
 
@@ -54,8 +56,9 @@ const InformationPage: React.FC<InformationPageProps> = () => {
             const success = await db.deleteInformation(id);
             if (success) {
                 setInformation(information.filter(info => info.id !== id));
+                toast.success('Informasi berhasil dihapus.');
             } else {
-                alert('Gagal menghapus informasi');
+                toast.error('Gagal menghapus informasi');
             }
         }
     };
@@ -65,8 +68,9 @@ const InformationPage: React.FC<InformationPageProps> = () => {
         if (success) {
             setInformation(information.map(i => i.id === updatedInfo.id ? updatedInfo : i));
             setEditingInformation(null);
+            toast.success('Informasi berhasil diperbarui.');
         } else {
-            alert('Gagal mengupdate informasi');
+            toast.error('Gagal mengupdate informasi');
         }
     };
 
