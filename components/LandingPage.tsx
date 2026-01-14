@@ -271,7 +271,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
 
                   {radioStream && radioStream.isPublished && radioStream.youtubeLink && radioStream.youtubeLink.trim() !== '' ? (
                     <iframe
-                      src={getYoutubeEmbedUrl(radioStream.youtubeLink, true, false) || ''}
+                      src={getYoutubeEmbedUrl(radioStream.youtubeLink, true, true) || ''}
                       className="w-full h-full"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
