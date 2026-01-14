@@ -95,16 +95,21 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             return;
         }
 
-        const success = await db.updateSettings(formData);
-        if (success) {
-            setSuccess('Pengaturan berhasil disimpan!');
-            setConfirmPassword('');
-            // Reload halaman setelah 1 detik untuk menerapkan perubahan
-            setTimeout(() => {
-                window.location.reload();
-            }, 1000);
-        } else {
-            setError('Gagal menyimpan pengaturan.');
+        try {
+            const success = await db.updateSettings(formData);
+            if (success) {
+                setSuccess('Pengaturan berhasil disimpan!');
+                setConfirmPassword('');
+                // Reload halaman setelah 1 detik untuk menerapkan perubahan
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                setError('Gagal menyimpan pengaturan. Silakan coba lagi.');
+            }
+        } catch (error) {
+            console.error('Error saving settings:', error);
+            setError('Terjadi kesalahan saat menyimpan pengaturan.');
         }
     };
 
@@ -180,17 +185,19 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                         Logo Login (JPG/PNG) - Auto-compression enabled
                     </label>
-                    <ImageUpload
-                        onUpload={handleLogoChange}
-                        type="icon"
-                        maxSizeMB={1}
+                    <input
+                        type="file"
                         accept="image/png,image/jpeg"
-                        className="mb-3"
+                        onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleLogoChange(file);
+                        }}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal text-sm"
                     />
                     {formData.loginLogo && (
-                        <div className="mt-3">
-                            <p className="text-sm text-gray-600 mb-2">Preview Logo:</p>
-                            <div className="w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-gray-200 overflow-hidden">
+                        <div className="mt-2">
+                            <p className="text-xs text-gray-600 mb-1">Preview Logo:</p>
+                            <div className="w-16 h-16 bg-white rounded-lg flex items-center justify-center shadow-md border border-gray-200 overflow-hidden">
                                 <img
                                     src={formData.loginLogo}
                                     alt="Logo Preview"
@@ -209,12 +216,12 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
                         type="file"
                         accept="image/png,image/jpeg"
                         onChange={handlePhotoChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal text-sm"
                     />
                     {formData.adminPhoto && (
-                        <div className="mt-3">
-                            <p className="text-sm text-gray-600 mb-2">Preview Foto:</p>
-                            <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center shadow-md border-2 border-gray-300 overflow-hidden">
+                        <div className="mt-2">
+                            <p className="text-xs text-gray-600 mb-1">Preview Foto:</p>
+                            <div className="w-16 h-16 bg-gray-100 rounded-lg flex items-center justify-center shadow-md border border-gray-200 overflow-hidden">
                                 <img
                                     src={formData.adminPhoto}
                                     alt="Foto Admin Preview"
