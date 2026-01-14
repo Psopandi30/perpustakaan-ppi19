@@ -9,7 +9,46 @@ interface UserBulletinPageProps {
 }
 
 const UserBulletinDetailPage: React.FC<{ bulletin: Bulletin; onBack: () => void }> = ({ bulletin, onBack }) => {
+    const [isReading, setIsReading] = useState(false);
     const coverUrl = resolveImageUrl(bulletin.coverLink);
+
+    const getGoogleDriveEmbedUrl = (url: string) => {
+        const fileIdMatch = url.match(/\/d\/(.*?)\/|id=(.*?)(&|$)/);
+        const fileId = fileIdMatch ? (fileIdMatch[1] || fileIdMatch[2]) : null;
+        if (fileId) {
+            return `https://drive.google.com/file/d/${fileId}/preview`;
+        }
+        return url;
+    };
+
+    if (isReading) {
+        return (
+            <div className="bg-gray-100 min-h-screen font-sans flex flex-col">
+                <header className="bg-dark-teal text-white p-4 flex justify-between items-center sticky top-0 z-10 shadow-md">
+                    <div className="flex items-center space-x-2 overflow-hidden">
+                        <BookOpenIcon className="w-6 h-6 flex-shrink-0" />
+                        <h1 className="text-lg font-semibold truncate">{bulletin.judul}</h1>
+                    </div>
+                    <button
+                        onClick={() => setIsReading(false)}
+                        className="flex items-center space-x-1 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md transition-colors flex-shrink-0 ml-2"
+                    >
+                        <ArrowLeftIcon className="w-5 h-5" />
+                        <span className="text-sm">Kembali ke Sampul</span>
+                    </button>
+                </header>
+                <main className="flex-grow flex flex-col h-[calc(100vh-64px)]">
+                    <iframe
+                        src={getGoogleDriveEmbedUrl(bulletin.drafLink)}
+                        className="w-full h-full border-none"
+                        title="PDF Viewer"
+                        allow="autoplay"
+                    />
+                </main>
+            </div>
+        );
+    }
+
     return (
         <div className="bg-gray-100 min-h-screen font-sans flex flex-col">
             <header className="bg-dark-teal text-white p-4 flex justify-between items-center sticky top-0 z-10">
@@ -37,16 +76,14 @@ const UserBulletinDetailPage: React.FC<{ bulletin: Bulletin; onBack: () => void 
                             Tidak ada cover
                         </div>
                     )}
-                    <a
-                        href={bulletin.drafLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                    <button
+                        onClick={() => setIsReading(true)}
                         className="inline-flex items-center justify-center px-4 py-2 bg-dark-teal text-white rounded-full font-semibold hover:bg-opacity-90 transition-colors"
                         aria-label={`Buka draf untuk ${bulletin.judul}`}
                     >
                         <BookOpenIcon className="w-5 h-5 mr-2" />
                         <span>Buka draf</span>
-                    </a>
+                    </button>
                     <div className="mt-6">
                         <h2 className="text-2xl font-bold text-dark-teal">{bulletin.judul}</h2>
                         <p className="text-md text-gray-600 mt-2">Penulis: {bulletin.namaPenulis}</p>
@@ -95,7 +132,7 @@ const UserBulletinPage: React.FC<UserBulletinPageProps> = ({ onBack }) => {
             }
         };
         loadBulletins();
-        
+
         // Poll for new bulletins every 30 seconds
         const interval = setInterval(loadBulletins, 30000);
         return () => clearInterval(interval);
