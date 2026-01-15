@@ -20,6 +20,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
   const [information, setInformation] = useState<Information | null>(null);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
+  const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [isFloating, setIsFloating] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const videoAnchorRef = React.useRef<HTMLDivElement>(null);
@@ -418,7 +419,11 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
               <div className="divide-y divide-gray-50">
                 {articles.length > 0 ? (
                   articles.map((article) => (
-                    <div key={article.id} className="p-3 hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div
+                      key={article.id}
+                      onClick={() => setSelectedArticle(article)}
+                      className="p-3 hover:bg-gray-50 transition-colors cursor-pointer group"
+                    >
                       <h3 className="font-medium text-gray-800 text-sm line-clamp-2 group-hover:text-dark-teal mb-1">{article.judul}</h3>
                       <div className="flex items-center text-[10px] text-gray-400 gap-1">
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
@@ -449,6 +454,57 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
           <p className="text-[10px] text-gray-400">Development by Pendi Sopandi, S. Kom, ITS</p>
         </div>
       </footer>
+
+      {/* Article Reader Modal */}
+      {selectedArticle && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up">
+
+            {/* Modal Header */}
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50">
+              <h2 className="font-bold text-gray-800 text-lg line-clamp-1">Baca Artikel</h2>
+              <button
+                onClick={() => setSelectedArticle(null)}
+                className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+
+            {/* Modal Content - Scrollable */}
+            <div className="overflow-y-auto p-6">
+              <h1 className="text-2xl font-bold text-dark-teal mb-2">{selectedArticle.judul}</h1>
+              <div className="flex items-center text-sm text-gray-500 mb-6 gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                {new Date(selectedArticle.tanggalTerbit).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              </div>
+
+              {selectedArticle.imageUrl && (
+                <img
+                  src={resolveImageUrl(selectedArticle.imageUrl)}
+                  alt={selectedArticle.judul}
+                  className="w-full h-auto max-h-80 object-cover rounded-xl mb-6 shadow-sm"
+                />
+              )}
+
+              <div
+                className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: selectedArticle.konten || '<p>Tidak ada konten.</p>' }}
+              />
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 border-t bg-gray-50 flex justify-end">
+              <button
+                onClick={() => setSelectedArticle(null)}
+                className="px-6 py-2 bg-dark-teal text-white rounded-lg hover:bg-teal-800 transition-colors font-medium text-sm"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
