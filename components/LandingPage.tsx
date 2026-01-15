@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import * as db from '../db';
-import type { RadioStreamData, Information, Banner, Article } from '../types';
+import type { PlaylistItem, Information, Banner, Article } from '../types';
 import { resolveImageUrl, getYoutubeEmbedUrl } from '../utils/media';
 import { UserIcon } from './icons/Icons';
 
@@ -16,11 +16,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
   const [currentTime, setCurrentTime] = useState(new Date());
   const [hijriDate, setHijriDate] = useState('');
   const [prayerTimes, setPrayerTimes] = useState<{ name: string; time: string }[]>([]);
-  const [radioStream, setRadioStream] = useState<RadioStreamData | null>(null);
+  const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
   const [information, setInformation] = useState<Information | null>(null);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [isFloating, setIsFloating] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const videoAnchorRef = React.useRef<HTMLDivElement>(null);
 
   // Update time every second
@@ -63,14 +64,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
   useEffect(() => {
     const loadData = async () => {
       try {
-        const [streamData, infoData, bannerData, articleData] = await Promise.all([
-          db.fetchRadioStreamData(),
+        const [playlistData, infoData, bannerData, articleData] = await Promise.all([
+          db.fetchPlaylist(),
           db.fetchInformation(),
           db.fetchBanners(),
           db.fetchArticles()
         ]);
 
-        setRadioStream(streamData);
+        // Filter and sort active playlist items
+        const activeItems = (playlistData || []).filter(i => i.isActive).sort((a, b) => a.order - b.order);
+        setPlaylist(activeItems);
+
         if (infoData && infoData.length > 0) {
           setInformation(infoData[infoData.length - 1]);
         }
@@ -78,10 +82,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
         setArticles(articleData ? articleData.slice(0, 5) : []);
       } catch (error) {
         console.error('Error loading landing page data:', error);
-        setRadioStream(null);
+        setPlaylist([]);
         setInformation(null);
         setBanners([]);
         setArticles([]);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -121,9 +127,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
     const handleScroll = () => {
       if (videoAnchorRef.current) {
         const rect = videoAnchorRef.current.getBoundingClientRect();
-        // Identify if video is scrolled out of view (top < negative height or some offset)
-        // Adjust threshold as needed, using -100 for smoother transition after it leaves
-        const shouldFloat = rect.bottom < 120; // 120px from top (header approx)
+        const shouldFloat = rect.bottom < 120;
         setIsFloating(shouldFloat);
       }
     };
@@ -149,6 +153,33 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
     });
   };
 
+  // Helper to extract Video ID for Playlist Construction
+  const getYoutubeVideoId = (url: string) => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  const getPlaylistSrc = () => {
+    if (playlist.length === 0) return null;
+    const videoIds = playlist.map(item => getYoutubeVideoId(item.youtubeLink)).filter(id => id !== null);
+    if (videoIds.length === 0) return null;
+
+    const firstId = videoIds[0];
+    const restIds = videoIds.slice(1).join(',');
+
+    // Add mute=1 for reliable autoplay
+    let src = `https://www.youtube.com/embed/${firstId}?autoplay=1&mute=1`;
+    if (restIds) {
+      src += `&playlist=${restIds}&loop=1`;
+    }
+    return src;
+  };
+
+  const playlistSrc = getPlaylistSrc();
+  const isLive = playlist.length > 0;
+  const currentTitle = isLive ? playlist[0].title : '';
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
       {/* Header - Clean Minimal Design */}
@@ -157,13 +188,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
           <div className="flex justify-between items-center gap-4">
             {/* Logo + Title - Left Side */}
             <div className="flex items-center gap-2 md:gap-3 flex-1">
-              {settings.loginLogo && (
+              {settings.loginLogo ? (
                 <img
                   src={settings.loginLogo}
                   alt="Logo"
-                  className="w-8 h-8 md:w-10 md:h-10 rounded-lg object-cover shadow-sm border border-white/20 flex-shrink-0"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none'; // Hide if broken
+                  }}
+                  className="w-8 h-8 md:w-10 md:h-10 rounded-lg object-cover shadow-sm border border-white/20 flex-shrink-0 bg-white"
                 />
-              )}
+              ) : null}
               <span className="text-[10px] mobile-s:text-xs sm:text-sm md:text-sm leading-tight text-white uppercase tracking-wide">
                 {settings.libraryName}
               </span>
@@ -229,15 +264,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
               <div className="px-4 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <h2 className="text-sm font-bold text-gray-800 flex items-center gap-2 uppercase tracking-wide">
                   <span className="relative flex h-2 w-2">
-                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${radioStream && radioStream.isPublished ? 'bg-red-400' : 'bg-gray-400'}`}></span>
-                    <span className={`relative inline-flex rounded-full h-2 w-2 ${radioStream && radioStream.isPublished ? 'bg-red-500' : 'bg-gray-500'}`}></span>
+                    <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${!isLoading && isLive ? 'bg-red-400' : 'bg-gray-400'}`}></span>
+                    <span className={`relative inline-flex rounded-full h-2 w-2 ${!isLoading && isLive ? 'bg-red-500' : 'bg-gray-500'}`}></span>
                   </span>
                   Live Streaming
                 </h2>
-                {radioStream && (
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${radioStream.isPublished ? 'bg-red-100 text-red-600' : 'bg-gray-200 text-gray-500'}`}>
-                    {radioStream.isPublished ? 'On Air' : 'Offline'}
-                  </span>
+                {!isLoading && (
+                  isLive ? (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-red-100 text-red-600">
+                      On Air
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-200 text-gray-500">
+                      Offline
+                    </span>
+                  )
                 )}
               </div>
 
@@ -269,25 +310,32 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                     </button>
                   )}
 
-                  {radioStream && radioStream.isPublished && radioStream.youtubeLink && radioStream.youtubeLink.trim() !== '' ? (
-                    <iframe
-                      src={getYoutubeEmbedUrl(radioStream.youtubeLink, true, false) || ''}
-                      className="w-full h-full"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
-                      <div className="p-3 bg-white rounded-full mb-2">
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                      </div>
-                      <p className="text-xs font-medium">Tidak ada siaran langsung</p>
+                  {isLoading ? (
+                    <div className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center">
+                      <p className="text-gray-400 text-xs font-semibold">Memuat Siaran...</p>
                     </div>
+                  ) : (
+                    isLive && playlistSrc ? (
+                      <iframe
+                        src={playlistSrc}
+                        className="w-full h-full"
+                        loading="eager"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-100 flex flex-col items-center justify-center text-gray-400">
+                        <div className="p-3 bg-white rounded-full mb-2">
+                          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </div>
+                        <p className="text-xs font-medium">Tidak ada siaran langsung</p>
+                      </div>
+                    )
                   )}
                 </div>
 
-                {radioStream && radioStream.title && (
-                  <div className="mt-3 text-sm font-semibold text-gray-800">{radioStream.title}</div>
+                {!isLoading && isLive && currentTitle && (
+                  <div className="mt-3 text-sm font-semibold text-gray-800">{currentTitle}</div>
                 )}
               </div>
             </div>

@@ -42,6 +42,14 @@ export interface RadioStreamData {
   messages: ChatMessage[];
 }
 
+export interface PlaylistItem {
+  id: number;
+  title: string;
+  youtubeLink: string;
+  order: number;
+  isActive: boolean;
+}
+
 export interface Bulletin {
   id: number;
   judul: string;

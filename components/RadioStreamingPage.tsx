@@ -1,228 +1,165 @@
-
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
-import type { ChatMessage, RadioStreamData } from '../types';
-import { ChatBubbleIcon, SendIcon, UserCircleIcon, PlayIcon, PauseIcon, StopIcon, PencilIcon, TrashIcon } from './icons/Icons';
+import type { PlaylistItem } from '../types';
+import { RadioIcon, PlayIcon, PauseIcon, StopIcon, PencilIcon, TrashIcon, PlusIcon } from './icons/Icons';
 import EditRadioStreamModal from './EditRadioStreamModal';
 import * as db from '../db';
 
 const RadioStreamingPage: React.FC = () => {
-    const [radioStreamData, setRadioStreamData] = useState<RadioStreamData>({
-        title: 'Loading...',
-        youtubeLink: '',
-        whatsappLink: '',
-        isPublished: false,
-        messages: []
-    });
-    const [newComment, setNewComment] = useState('');
-    const chatEndRef = useRef<HTMLDivElement>(null);
+    const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingItem, setEditingItem] = useState<PlaylistItem | null>(null);
 
     const loadData = React.useCallback(async () => {
-        const data = await db.fetchRadioStreamData();
-        setRadioStreamData(data);
+        const data = await db.fetchPlaylist();
+        setPlaylist(data);
     }, []);
 
     useEffect(() => {
         loadData();
-
-        // Don't poll if modal is open to avoid overwriting form data
-        if (isEditModalOpen) return;
-
         const interval = setInterval(loadData, 5000);
         return () => clearInterval(interval);
-    }, [isEditModalOpen, loadData]);
+    }, [loadData]);
 
-    useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [radioStreamData.messages]);
-
-    const handleUpdateField = async (field: keyof RadioStreamData, value: string | boolean) => {
-        const updatedData = { ...radioStreamData, [field]: value };
-        setRadioStreamData(updatedData);
-        await db.updateRadioStreamData(updatedData);
+    const handleAddClick = () => {
+        setEditingItem(null); // Create mode
+        setIsEditModalOpen(true);
     };
 
-    const handleAddMessage = async (message: string, isAdmin: boolean, sender: string) => {
-        const newMessage: Omit<ChatMessage, 'id' | 'timestamp'> = {
-            sender,
-            message,
-            isAdmin
-        };
-        const savedMessage = await db.sendChatMessage(newMessage);
-        if (savedMessage) {
-            setRadioStreamData(prev => ({
-                ...prev,
-                messages: [...prev.messages, savedMessage]
-            }));
-        }
+    const handleEditClick = (item: PlaylistItem) => {
+        setEditingItem(item); // Edit mode
+        setIsEditModalOpen(true);
     };
 
-    const handleSendMessage = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (newComment.trim() === '') return;
-        handleAddMessage(newComment, true, 'Admin');
-        setNewComment('');
-    };
-
-    const handleSaveEdit = async (updatedData: RadioStreamData) => {
-        console.log('Saving data:', updatedData);
-        // Only send fields that exist in database, not messages
-        const dataToSave = {
-            id: updatedData.id,
-            title: updatedData.title,
-            youtubeLink: updatedData.youtubeLink,
-            whatsappLink: updatedData.whatsappLink,
-            isPublished: updatedData.isPublished
-        };
-        const success = await db.updateRadioStreamData(dataToSave);
-        console.log('Save result:', success);
-        if (success) {
-            setIsEditModalOpen(false);
-            // Reload data to reflect changes
-            await loadData();
-            toast.success('Pengaturan live streaming disimpan.');
+    const handleSaveItem = async (data: any) => {
+        if (editingItem) {
+            // Update
+            const updated = { ...editingItem, title: data.title, youtubeLink: data.youtubeLink };
+            const success = await db.updatePlaylistItem(updated);
+            if (success) toast.success('Berhasil memperbarui data.');
+            else toast.error('Gagal memperbarui.');
         } else {
-            toast.error('Gagal menyimpan perubahan. Silakan coba lagi.');
+            // Add
+            const newItem = {
+                title: data.title,
+                youtubeLink: data.youtubeLink,
+                order: playlist.length + 1,
+                isActive: false
+            };
+            const result = await db.addPlaylistItem(newItem);
+            if (result) toast.success('Berhasil menambahkan video baru.');
+            else toast.error('Gagal menambahkan.');
+        }
+        setIsEditModalOpen(false);
+        loadData();
+    };
+
+    const handleDeleteClick = async (id: number) => {
+        if (window.confirm("Apakah Anda yakin ingin menghapus video ini dari playlist?")) {
+            await db.deletePlaylistItem(id);
+            toast.success("Video dihapus.");
+            loadData();
         }
     };
 
-    const togglePublish = async () => {
-        const newPublishedState = !radioStreamData.isPublished;
+    const handlePlayItem = async (item: PlaylistItem) => {
+        // Deactivate all others, activate this one (Optional logic, or just a flag)
+        // For 'Automatic Playlist', isActive might just mean "Is currently qualified to play".
+        // Let's just toggle 'isActive' for the item.
+        const updated = { ...item, isActive: true };
+        await db.updatePlaylistItem(updated);
+        toast.success(`Video "${item.title}" diaktifkan.`);
+        loadData();
+    };
 
-        if (newPublishedState) {
-            // Starting stream
-            const startNewSession = window.confirm("Mulai sesi baru? Klik OK untuk menghapus chat lama, atau Cancel untuk melanjutkan sesi sebelumnya.");
-            if (startNewSession) {
-                // We don't delete messages anymore (permission issue).
-                // Instead, toggling isPublished updates 'updated_at', 
-                // and we filter messages older than 'updated_at'.
-                // So just proceeding will effectively clear the chat view.
-                setRadioStreamData(prev => ({ ...prev, messages: [] }));
-            }
-        }
-
-        await handleUpdateField('isPublished', newPublishedState);
-        if (newPublishedState) {
-            // Send generic notification without title
-            await db.addNotification({
-                type: 'live-streaming',
-                title: 'Live Streaming Dimulai!',
-                message: 'Siaran langsung sedang berlangsung. Yuk tonton!',
-                timestamp: new Date(),
-                isRead: false
-            });
-            toast.success('Live streaming dimulai! Notifikasi terkirim.');
-        } else {
-            toast.success('Live streaming dijeda/dihentikan.');
-        }
-    }
-
-    const stopPublish = async () => {
-        await handleUpdateField('isPublished', false);
-        toast.success('Live streaming dihentikan.');
-    }
-
-    const handleClearChat = async () => {
-        const confirmed = window.confirm("Apakah Anda yakin ingin menghapus semua pesan chat? Tindakan ini tidak dapat dibatalkan.");
-        if (confirmed) {
-            const success = await db.clearRadioChatMessages();
-            if (success) {
-                setRadioStreamData(prev => ({ ...prev, messages: [] }));
-                toast.success("Chat berhasil dihapus!");
-            } else {
-                toast.error("Gagal menghapus chat. Silakan coba lagi.");
-            }
-        }
-    }
+    const handleStopItem = async (item: PlaylistItem) => {
+        const updated = { ...item, isActive: false };
+        await db.updatePlaylistItem(updated);
+        toast.success(`Video "${item.title}" dinonaktifkan.`);
+        loadData();
+    };
 
     return (
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md border border-gray-200 h-full flex flex-col space-y-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-dark-teal pb-4 border-b">
-                Kelola Live Streaming
-            </h2>
-
-            <div className="overflow-x-auto border-2 border-gray-300 rounded-lg">
-                <table className="min-w-full bg-white text-sm">
-                    <thead className="bg-gray-100 border-b-2 border-gray-300">
-                        <tr>
-                            <th className="px-4 py-3 text-left font-semibold text-gray-600">Link Youtube</th>
-                            <th className="px-4 py-3 w-32"></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td className="px-4 py-3 text-red-600 truncate max-w-xs">
-                                <a href={radioStreamData.youtubeLink} target="_blank" rel="noopener noreferrer">{radioStreamData.youtubeLink}</a>
-                            </td>
-                            <td className="px-4 py-3 flex items-center justify-end space-x-3">
-                                <button onClick={togglePublish} title={radioStreamData.isPublished ? "Pause" : "Play"}>
-                                    {radioStreamData.isPublished ? (
-                                        <PauseIcon className="h-6 w-6 text-green-600 hover:text-green-800" />
-                                    ) : (
-                                        <PlayIcon className="h-6 w-6 text-green-600 hover:text-green-800" />
-                                    )}
-                                </button>
-                                <button onClick={stopPublish} title="Stop">
-                                    <StopIcon className="h-6 w-6 text-red-600 hover:text-red-800" />
-                                </button>
-                                <button onClick={() => setIsEditModalOpen(true)} title="Edit">
-                                    <PencilIcon className="h-6 w-6 text-dark-teal hover:text-teal-800" />
-                                </button>
-                                <button onClick={handleClearChat} title="Hapus Semua Chat">
-                                    <TrashIcon className="h-6 w-6 text-red-600 hover:text-red-800" />
-                                </button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div className="flex-grow flex flex-col pt-4 min-h-0">
-                <div className="flex items-center space-x-2 mb-4">
-                    <ChatBubbleIcon className="h-6 w-6 text-gray-800" />
-                    <h3 className="text-lg font-semibold text-gray-800">Live Chat</h3>
+        <>
+            <div className="bg-white p-6 rounded-lg shadow-md border border-gray-200 h-full flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center space-x-2">
+                        <RadioIcon className="h-8 w-8 text-dark-teal" />
+                        <h2 className="text-xl font-bold text-gray-800 uppercase tracking-wide">
+                            DAFTAR LIVE STREAMING
+                        </h2>
+                    </div>
+                    <button
+                        onClick={handleAddClick}
+                        className="flex items-center justify-center bg-green-500 text-white font-bold p-2 rounded shadow hover:bg-green-600 transition-colors duration-300"
+                        title="Tambahkan Video ke Playlist"
+                    >
+                        <PlusIcon className="h-6 w-6" />
+                    </button>
                 </div>
 
-                <div className="flex-grow border-2 border-gray-300 rounded-xl p-4 overflow-hidden flex flex-col bg-white shadow-inner">
-                    <div className="overflow-y-auto custom-scrollbar flex-grow space-y-4 pr-2">
-                        {radioStreamData.messages.map(msg => (
-                            <div key={msg.id} className={`flex items-start space-x-3 ${msg.isAdmin ? 'justify-end' : ''}`}>
-                                {!msg.isAdmin && <UserCircleIcon className="h-8 w-8 text-gray-600 flex-shrink-0 mt-1" />}
-                                <div className={`px-4 py-2 rounded-2xl max-w-sm ${msg.isAdmin
-                                    ? 'bg-[#9cc2c9] text-gray-900 rounded-br-none'
-                                    : 'bg-white text-gray-800 border border-gray-300 rounded-bl-none'
-                                    }`}>
-                                    {!msg.isAdmin && <p className="font-bold text-sm text-gray-900 mb-1">{msg.sender}</p>}
-                                    {msg.isAdmin && <p className="font-bold text-sm text-gray-900 mb-1 text-right">Admin</p>}
-                                    <p className="text-sm">{msg.message}</p>
-                                </div>
-                                {msg.isAdmin && <UserCircleIcon className="h-8 w-8 text-dark-teal flex-shrink-0 mt-1" />}
-                            </div>
-                        ))}
-                        <div ref={chatEndRef} />
+                <div className="flex-grow border-2 border-gray-300 rounded-lg overflow-hidden flex flex-col">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full bg-white text-sm">
+                            <thead className="bg-gray-100 border-b-2 border-gray-300">
+                                <tr>
+                                    <th className="px-4 py-3 text-left font-semibold text-gray-600 w-16">No</th>
+                                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Judul Siaran</th>
+                                    <th className="px-4 py-3 text-left font-semibold text-gray-600">Link Youtube</th>
+                                    <th className="px-4 py-3 text-center font-semibold text-gray-600 w-24">Status</th>
+                                    <th className="px-4 py-3 w-48 text-center font-semibold text-gray-600">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {playlist.length > 0 ? (
+                                    playlist.map((item, index) => (
+                                        <tr key={item.id} className="border-b hover:bg-gray-50">
+                                            <td className="px-4 py-3 text-gray-500">{index + 1}</td>
+                                            <td className="px-4 py-3 font-medium text-gray-800">{item.title}</td>
+                                            <td className="px-4 py-3 text-blue-600 truncate max-w-xs">
+                                                <a href={item.youtubeLink} target="_blank" rel="noopener noreferrer">{item.youtubeLink}</a>
+                                            </td>
+                                            <td className="px-4 py-3 text-center">
+                                                {item.isActive ? (
+                                                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Aktif</span>
+                                                ) : (
+                                                    <span className="bg-gray-100 text-gray-400 text-xs px-2 py-1 rounded-full">Non-aktif</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-3 flex items-center justify-center space-x-3">
+                                                <button onClick={() => handlePlayItem(item)} title="Mainkan / Aktifkan">
+                                                    <PlayIcon className="h-6 w-6 text-green-600 hover:text-green-800" />
+                                                </button>
+                                                <button onClick={() => handleStopItem(item)} title="Stop / Non-aktifkan">
+                                                    <StopIcon className="h-6 w-6 text-red-600 hover:text-red-800" />
+                                                </button>
+                                                <button onClick={() => handleEditClick(item)} title="Edit">
+                                                    <PencilIcon className="h-6 w-6 text-dark-teal hover:text-teal-800" />
+                                                </button>
+                                                <button onClick={() => handleDeleteClick(item.id)} title="Hapus">
+                                                    <TrashIcon className="h-6 w-6 text-red-600 hover:text-red-800" />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
+                                            Playlist kosong. Belum ada video yang ditambahkan.
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-
-                <form onSubmit={handleSendMessage} className="mt-4 relative">
-                    <input
-                        type="text"
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        placeholder="Balas Komentar"
-                        className="w-full px-6 py-4 text-gray-600 bg-white border-2 border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-dark-teal shadow-sm text-lg"
-                    />
-                    <button type="submit" className="absolute right-4 top-1/2 -translate-y-1/2 text-dark-teal p-2 hover:bg-gray-100 rounded-full transition-colors" aria-label="Kirim Komentar">
-                        <SendIcon className="h-8 w-8" />
-                    </button>
-                </form>
             </div>
 
             {isEditModalOpen && (
                 <EditRadioStreamModal
-                    data={radioStreamData}
+                    data={editingItem || { title: '', youtubeLink: '' } as any}
                     onClose={() => setIsEditModalOpen(false)}
-                    onSave={handleSaveEdit}
+                    onSave={handleSaveItem}
                 />
             )}
             <style>{`
@@ -241,7 +178,7 @@ const RadioStreamingPage: React.FC = () => {
                     background: #a8a8a8;
                 }
             `}</style>
-        </div>
+        </>
     );
 };
 

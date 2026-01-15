@@ -43,15 +43,15 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, onRegister, settings, on
               ← Kembali ke Halaman Utama
             </button>
           )}
-          <div className="mx-auto mb-8 w-28 h-28 bg-white rounded-full flex items-center justify-center shadow-lg overflow-hidden">
+          <div className="mx-auto mb-8 w-32 h-32 flex items-center justify-center">
             {settings.loginLogo ? (
               <img
                 src={settings.loginLogo}
                 alt="Logo"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             ) : (
-              <BookOpenIcon className="h-16 w-16 text-dark-teal" />
+              <BookOpenIcon className="h-20 w-20 text-brand-yellow" />
             )}
           </div>
 

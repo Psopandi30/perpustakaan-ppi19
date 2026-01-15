@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import type { RadioStreamData, User } from '../types';
-import { RadioIcon, PlayIcon, ChatBubbleIcon, SendIcon, UserCircleIcon, WhatsappIcon, HomeIcon, ExitIcon } from './icons/Icons';
+import React, { useState, useEffect } from 'react';
+import type { PlaylistItem, User } from '../types';
+import { RadioIcon, PlayIcon, HomeIcon, ExitIcon } from './icons/Icons';
 import * as db from '../db';
 
 interface UserRadioStreamingPageProps {
@@ -8,53 +8,56 @@ interface UserRadioStreamingPageProps {
     onBack: () => void;
 }
 
-import { getYoutubeEmbedUrl } from '../utils/media';
-
 
 const UserRadioStreamingPage: React.FC<UserRadioStreamingPageProps> = ({ user, onBack }) => {
-    const [radioStreamData, setRadioStreamData] = useState<RadioStreamData>({
-        title: '',
-        youtubeLink: '',
-        whatsappLink: '',
-        isPublished: false,
-        messages: []
-    });
-    const embedUrl = getYoutubeEmbedUrl(radioStreamData.youtubeLink);
-    const [newComment, setNewComment] = useState('');
-    const chatEndRef = useRef<HTMLDivElement>(null);
+    const [playlist, setPlaylist] = useState<PlaylistItem[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     const loadData = async () => {
-        const data = await db.fetchRadioStreamData();
-        setRadioStreamData(data);
+        const data = await db.fetchPlaylist();
+        // Sort by order, filter active maybe? Or just play all.
+        // Assuming "Active" means "In the list of to-be-played".
+        // If isActive flag is used for "Currently Playing", then we just play that one?
+        // User asked for "Playlist... 1 finishes -> 2". This implies a sequence.
+        // So we play ALL items in the playlist, ordered by 'order'.
+        // We filter out explicitly set 'isActive: false' if that's the semantics. 
+        // Admin side has 'isActive' toggle. Let's assume only Active items are in the rotation.
+        const activeItems = data.filter(i => i.isActive).sort((a, b) => a.order - b.order);
+        setPlaylist(activeItems);
+        setIsLoading(false);
     };
 
     useEffect(() => {
         loadData();
-        // Poll for updates every 3 seconds
-        const interval = setInterval(loadData, 3000);
+        const interval = setInterval(loadData, 10000); // Poll/Refresh
         return () => clearInterval(interval);
     }, []);
 
-    useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [radioStreamData.messages]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const message = newComment.trim();
-        if (!message) return;
-
-        // Send message
-        await db.sendChatMessage({
-            sender: user.namaLengkap,
-            message: message,
-            isAdmin: false
-        });
-
-        setNewComment('');
-        // Reload data immediately to show new message
-        loadData();
+    // Helper to extract Video ID
+    const getYoutubeVideoId = (url: string) => {
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = url.match(regExp);
+        return (match && match[2].length === 11) ? match[2] : null;
     };
+
+    // Construct Playlist Source
+    const getPlaylistSrc = () => {
+        if (playlist.length === 0) return null;
+
+        const videoIds = playlist.map(item => getYoutubeVideoId(item.youtubeLink)).filter(id => id !== null);
+        if (videoIds.length === 0) return null;
+
+        const firstId = videoIds[0];
+        const restIds = videoIds.slice(1).join(',');
+
+        let src = `https://www.youtube.com/embed/${firstId}?autoplay=1&mute=1`;
+        if (restIds) {
+            src += `&playlist=${restIds}&loop=1`; // loop=1 ensures it continues to playlist? actually loop=1 + playlist is robust
+        }
+        return src;
+    };
+
+    const playlistSrc = getPlaylistSrc();
 
     return (
         <div className="bg-gray-100 min-h-screen font-sans flex flex-col">
@@ -66,64 +69,72 @@ const UserRadioStreamingPage: React.FC<UserRadioStreamingPageProps> = ({ user, o
             </header>
 
             <main className="flex-grow p-4 space-y-4 pb-20">
-                <div className="aspect-video bg-black border-4 border-white rounded-lg flex items-center justify-center text-white overflow-hidden">
-                    {radioStreamData.isPublished && embedUrl ? (
+                <div className="aspect-video bg-black border-4 border-white rounded-lg flex items-center justify-center text-white overflow-hidden shadow-lg">
+                    {playlistSrc ? (
                         <iframe
                             className="w-full h-full"
-                            src={embedUrl}
+                            src={playlistSrc}
                             title="YouTube video player"
                             frameBorder="0"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
                         ></iframe>
                     ) : (
-                        <div className="text-center">
-                            <PlayIcon className="w-16 h-16 text-white opacity-50 mx-auto" />
-                            <p className="mt-2 text-sm">Siaran akan segera dimulai...</p>
+                        <div className="text-center p-8">
+                            {isLoading ? (
+                                <p>Memuat playlist...</p>
+                            ) : (
+                                <>
+                                    <PlayIcon className="w-16 h-16 text-white opacity-50 mx-auto" />
+                                    <p className="mt-4 text-lg">Belum ada siaran yang aktif saat ini.</p>
+                                    <p className="text-sm text-gray-400 mt-2">Silakan tunggu admin memulai siaran.</p>
+                                </>
+                            )}
                         </div>
                     )}
                 </div>
 
-                {/* Title and WhatsApp removed as per request */}
+                {/* Live Chat Section */}
+                {playlist.length > 0 && (() => {
+                    const currentId = getYoutubeVideoId(playlist[0].youtubeLink);
+                    // Use window.location.hostname for dynamic domain.
+                    // Note: This requires the component to be mounted client-side which it is.
+                    const domain = typeof window !== 'undefined' ? window.location.hostname : '';
 
-                <div className="flex-grow flex flex-col pt-4 min-h-0">
-                    <div className="flex items-center space-x-2 mb-4">
-                        <ChatBubbleIcon className="h-6 w-6 text-gray-600" />
-                        <h3 className="text-lg font-semibold text-gray-700">Live Chat</h3>
-                    </div>
+                    if (currentId && domain) {
+                        return (
+                            <div className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden h-96 flex flex-col">
+                                <h3 className="font-bold text-gray-800 p-3 border-b bg-gray-50 flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
+                                    Live Chat YouTube
+                                </h3>
+                                <iframe
+                                    src={`https://www.youtube.com/live_chat?v=${currentId}&embed_domain=${domain}`}
+                                    className="w-full flex-grow border-none"
+                                    title="Live Chat"
+                                />
+                            </div>
+                        );
+                    }
+                    return null;
+                })()}
 
-                    <div className="flex-grow bg-white p-3 rounded-lg border border-gray-200 h-64 overflow-y-auto custom-scrollbar">
-                        <div className="space-y-4">
-                            {radioStreamData.messages.map(msg => (
-                                <div key={msg.id} className={`flex items-start space-x-3 ${msg.isAdmin ? 'justify-end' : ''}`}>
-                                    {!msg.isAdmin && <UserCircleIcon className="h-6 w-6 text-gray-400 flex-shrink-0 mt-1" />}
-                                    <div className={`px-4 py-2 rounded-2xl max-w-sm ${msg.isAdmin
-                                        ? 'bg-teal-100 text-gray-800 rounded-br-none'
-                                        : 'bg-white text-gray-700 border border-gray-200 rounded-bl-none'
-                                        }`}>
-                                        {!msg.isAdmin && <p className="font-bold text-sm text-dark-teal">{msg.sender}</p>}
-                                        <p>{msg.message}</p>
-                                    </div>
-                                    {msg.isAdmin && <UserCircleIcon className="h-6 w-6 text-dark-teal flex-shrink-0 mt-1" />}
-                                </div>
+                {/* Playlist Info */}
+                {playlist.length > 0 && (
+                    <div className="bg-white p-4 rounded-lg shadow border border-gray-200">
+                        <h3 className="font-bold text-gray-800 mb-2 border-b pb-2">Daftar Putar</h3>
+                        <ul className="space-y-2">
+                            {playlist.map((item, index) => (
+                                <li key={item.id} className="flex items-center space-x-3 text-sm text-gray-700">
+                                    <span className="bg-gray-200 text-gray-600 rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                        {index + 1}
+                                    </span>
+                                    <span className="truncate">{item.title}</span>
+                                </li>
                             ))}
-                            <div ref={chatEndRef} />
-                        </div>
+                        </ul>
                     </div>
-
-                    <form className="mt-4 flex items-center space-x-3" onSubmit={handleSubmit}>
-                        <input
-                            type="text"
-                            value={newComment}
-                            onChange={(e) => setNewComment(e.target.value)}
-                            placeholder="Balas Komentar"
-                            className="w-full px-4 py-3 text-gray-700 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-dark-teal"
-                        />
-                        <button type="submit" className="text-dark-teal p-2 rounded-full hover:bg-gray-200" aria-label="Kirim Komentar">
-                            <SendIcon className="h-7 w-7" />
-                        </button>
-                    </form>
-                </div>
+                )}
             </main>
 
             <footer className="fixed bottom-0 left-0 right-0 bg-white shadow-[0_-2px_5px_rgba(0,0,0,0.1)] rounded-t-2xl">
@@ -138,22 +149,6 @@ const UserRadioStreamingPage: React.FC<UserRadioStreamingPageProps> = ({ user, o
                     </button>
                 </div>
             </footer>
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 8px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: #f1f1f1;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #888;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #555;
-                }
-            `}</style>
         </div>
     );
 };

@@ -41,6 +41,17 @@ const EditRadioStreamModal: React.FC<EditRadioStreamModalProps> = ({ data, onClo
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Judul Siaran</label>
+            <input
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-dark-teal"
+              placeholder="Masukkan Judul Siaran"
+            />
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Link Youtube</label>
             <input
               type="text"
@@ -56,8 +67,8 @@ const EditRadioStreamModal: React.FC<EditRadioStreamModalProps> = ({ data, onClo
             <button type="submit" className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Simpan</button>
           </div>
         </form>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 };
 

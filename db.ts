@@ -1,4 +1,83 @@
-import type { User, RadioStreamData, Information, ChatThread, Bulletin, WrittenWork, GeneralBook, KaryaAsatidz, MateriDakwah, KhutbahJumat, Settings, Notification, ChatMessage, Banner, Article } from './types';
+// --- Playlist ---
+export const fetchPlaylist = async (): Promise<PlaylistItem[]> => {
+    if (!supabase) {
+        return getLocalData<PlaylistItem>(LOCAL_STORAGE_KEYS.PLAYLIST).sort((a, b) => a.order - b.order);
+    }
+    const { data, error } = await supabase.from('playlist_items').select('*').order('order', { ascending: true });
+    if (error) return [];
+    return (data as any[] || []).map(item => ({
+        id: item.id,
+        title: item.title,
+        youtubeLink: item.youtube_link,
+        order: item.order,
+        isActive: item.is_active
+    }));
+};
+
+export const addPlaylistItem = async (item: Omit<PlaylistItem, 'id'>): Promise<PlaylistItem | null> => {
+    if (!supabase) {
+        const items = getLocalData<PlaylistItem>(LOCAL_STORAGE_KEYS.PLAYLIST);
+        const newItem = {
+            ...item,
+            id: generateId()
+        } as PlaylistItem;
+        // Auto-increment order if not specified
+        if (!newItem.order) {
+            newItem.order = items.length > 0 ? Math.max(...items.map(i => i.order)) + 1 : 1;
+        }
+        items.push(newItem);
+        setLocalData(LOCAL_STORAGE_KEYS.PLAYLIST, items);
+        return newItem;
+    }
+    const { data, error } = await supabase.from('playlist_items').insert({
+        title: item.title,
+        youtube_link: item.youtubeLink,
+        order: item.order,
+        is_active: item.isActive
+    } as any).select().single();
+    if (error || !data) return null;
+    const d = data as any;
+    return {
+        id: d.id,
+        title: d.title,
+        youtubeLink: d.youtube_link,
+        order: d.order,
+        isActive: d.is_active
+    };
+};
+
+export const updatePlaylistItem = async (item: PlaylistItem): Promise<boolean> => {
+    if (!supabase) {
+        const items = getLocalData<PlaylistItem>(LOCAL_STORAGE_KEYS.PLAYLIST);
+        const index = items.findIndex(i => i.id === item.id);
+        if (index !== -1) {
+            items[index] = item;
+            setLocalData(LOCAL_STORAGE_KEYS.PLAYLIST, items);
+            return true;
+        }
+        return false;
+    }
+    // @ts-expect-error - Supabase type inference on updates
+    const { error } = await supabase.from('playlist_items').update({
+        title: item.title,
+        youtube_link: item.youtubeLink,
+        order: item.order,
+        is_active: item.isActive
+    } as any).eq('id', item.id);
+    return !error;
+};
+
+export const deletePlaylistItem = async (id: number): Promise<boolean> => {
+    if (!supabase) {
+        const items = getLocalData<PlaylistItem>(LOCAL_STORAGE_KEYS.PLAYLIST);
+        const filtered = items.filter(i => i.id !== id);
+        setLocalData(LOCAL_STORAGE_KEYS.PLAYLIST, filtered);
+        return true;
+    }
+    const { error } = await supabase.from('playlist_items').delete().eq('id', id);
+    return !error;
+};
+
 import { supabase } from './lib/supabase';
 
 // --- Local Storage Helpers ---
@@ -16,7 +95,8 @@ const LOCAL_STORAGE_KEYS = {
     SETTINGS: 'literasi_settings',
     NOTIFICATIONS: 'literasi_notifications',
     BANNERS: 'literasi_banners',
-    ARTICLES: 'literasi_articles'
+    ARTICLES: 'literasi_articles',
+    PLAYLIST: 'literasi_playlist'
 };
 
 const getLocalData = <T>(key: string): T[] => {
@@ -502,9 +582,7 @@ const mka = createModuleHelpers<KaryaAsatidz, any>(
     k => ({ judul: k.judul, nama_penulis: k.namaPenulis, tanggal_terbit: k.tanggalTerbit, cover_link: k.coverLink, draf_link: k.drafLink })
 );
 export const fetchKaryaAsatidz = mka.fetch;
-export const addKaryaAsatidz = mka.add;
-export const updateKaryaAsatidz = mka.update;
-export const deleteKaryaAsatidz = mka.delete;
+import type { User, RadioStreamData, Information, ChatThread, Bulletin, WrittenWork, GeneralBook, KaryaAsatidz, MateriDakwah, KhutbahJumat, Settings, Notification, ChatMessage, Banner, Article, PlaylistItem } from './types';
 
 // --- Materi Dakwah ---
 const mmd = createModuleHelpers<MateriDakwah, any>(
