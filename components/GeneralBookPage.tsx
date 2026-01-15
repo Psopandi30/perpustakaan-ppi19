@@ -78,18 +78,15 @@ const GeneralBookPage: React.FC = () => {
                     <div className="flex items-center space-x-2">
                         <BookIcon className="h-8 w-8 text-dark-teal" />
                         <h2 className="text-xl font-bold text-gray-800 uppercase tracking-wide">
-                            DAFTAR KARYA TULIS ASATIDZ
+                            DAFTAR BUKU UMUM
                         </h2>
                     </div>
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center bg-green-500 text-white font-bold py-2 px-4 rounded shadow hover:bg-green-600 transition-colors duration-300"
+                        className="flex items-center justify-center bg-green-500 text-white font-bold p-2 rounded shadow hover:bg-green-600 transition-colors duration-300"
+                        title="Tambahkan Skripsi"
                     >
-                        <div className="flex items-center space-x-1">
-                            <BookIcon className="h-5 w-5" />
-                            <PlusIcon className="h-4 w-4" />
-                        </div>
-                        <span className="ml-2">Tambahkan Skripsi</span>
+                        <PlusIcon className="h-6 w-6" />
                     </button>
                 </div>
 

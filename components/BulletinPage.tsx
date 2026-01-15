@@ -92,13 +92,10 @@ const BulletinPage: React.FC<BulletinPageProps> = () => {
                     </div>
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="flex items-center bg-green-500 text-white font-bold py-2 px-4 rounded shadow hover:bg-green-600 transition-colors duration-300"
+                        className="flex items-center justify-center bg-green-500 text-white font-bold p-2 rounded shadow hover:bg-green-600 transition-colors duration-300"
+                        title="Tambahkan Buletin"
                     >
-                        <div className="flex items-center space-x-1">
-                            <BulletinIcon className="h-5 w-5" />
-                            <PlusIcon className="h-4 w-4" />
-                        </div>
-                        <span className="ml-2">Tambahkan Buletin</span>
+                        <PlusIcon className="h-6 w-6" />
                     </button>
                 </div>
 

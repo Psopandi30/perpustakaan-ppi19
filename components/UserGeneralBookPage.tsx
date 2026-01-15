@@ -54,7 +54,7 @@ const UserGeneralBookDetailPage: React.FC<{ work: GeneralBook; onBack: () => voi
             <header className="bg-dark-teal text-white p-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center space-x-2">
                     <BookIcon className="w-7 h-7" />
-                    <h1 className="text-xl font-semibold">DAFTAR KARYA TULIS ASATIDZ</h1>
+                    <h1 className="text-xl font-semibold">DAFTAR BUKU UMUM</h1>
                 </div>
                 <button onClick={onBack} className="flex items-center space-x-1 hover:bg-white/10 p-2 rounded-md flex-shrink-0">
                     <ArrowLeftIcon className="w-6 h-6" />
@@ -172,7 +172,7 @@ const UserGeneralBookPage: React.FC<UserGeneralBookPageProps> = ({ onBack }) => 
             <header className="bg-dark-teal text-white p-4 flex justify-between items-center sticky top-0 z-10">
                 <div className="flex items-center space-x-2">
                     <BookIcon className="w-7 h-7" />
-                    <h1 className="text-xl font-semibold">DAFTAR KARYA TULIS ASATIDZ</h1>
+                    <h1 className="text-xl font-semibold">DAFTAR BUKU UMUM</h1>
                 </div>
             </header>
 

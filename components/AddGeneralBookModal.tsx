@@ -32,7 +32,7 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
     }
     onSave(formData);
   };
-  
+
   const formFields = [
     { name: 'judul', label: 'Judul Skripsi', type: 'text' },
     { name: 'namaPenulis', label: 'Nama Penulis', type: 'text' },
@@ -68,7 +68,7 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
     >
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
-          <h2 className="text-xl font-semibold text-gray-800">Tambah Skripsi</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Tambah</h2>
           <button onClick={onClose} aria-label="Close modal">
             <XIcon className="h-6 w-6 text-gray-500 hover:text-gray-800" />
           </button>
@@ -107,7 +107,7 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
               />
             )}
           </div>
-          
+
           {error && (
             <p className="text-red-500 text-sm" role="alert">
               {error}

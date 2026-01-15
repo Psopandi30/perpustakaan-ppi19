@@ -69,7 +69,7 @@ const AddBulletinModal: React.FC<AddBulletinModalProps> = ({ onClose, onSave }) 
     >
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
-          <h2 className="text-xl font-semibold text-gray-800">Tambah Buletin</h2>
+          <h2 className="text-xl font-semibold text-gray-800"></h2>
           <button onClick={onClose} aria-label="Close modal">
             <XIcon className="h-6 w-6 text-gray-500 hover:text-gray-800" />
           </button>
