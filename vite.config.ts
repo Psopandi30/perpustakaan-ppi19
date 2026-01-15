@@ -14,9 +14,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['pwa-icon.png'],
       manifest: {
-        name: 'Perpustakaan Digital PPI 19 Garut',
+        name: 'PERPUSTAKAAN PESANTREN PERSIS 19 GARUT',
         short_name: 'PERPUS PPI 19',
-        description: 'Sistem Literasi Membaca untuk PPI 19 Garut',
+        description: 'Sistem Literasi Membaca Perpustakaan Pesantren Persis 19 Garut',
         theme_color: '#1A3A3A',
         background_color: '#ffffff',
         display: 'standalone',
