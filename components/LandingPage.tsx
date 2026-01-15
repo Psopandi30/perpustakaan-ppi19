@@ -483,12 +483,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                 <img
                   src={resolveImageUrl(selectedArticle.imageUrl)}
                   alt={selectedArticle.judul}
-                  className="w-full h-auto max-h-80 object-cover rounded-xl mb-6 shadow-sm"
+                  className="w-full md:w-3/4 mx-auto max-h-64 object-cover rounded-xl mb-6 shadow-sm"
                 />
               )}
 
               <div
-                className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed"
+                className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed text-justify hyphens-auto"
                 dangerouslySetInnerHTML={{ __html: selectedArticle.konten || '<p>Tidak ada konten.</p>' }}
               />
             </div>
