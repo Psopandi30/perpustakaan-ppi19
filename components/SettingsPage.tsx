@@ -24,7 +24,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
     useEffect(() => {
         const loadSettings = async () => {
             setIsLoading(true);
-            
+
             // Try localStorage first
             const localSettings = localStorage.getItem('literasi_settings');
             if (localSettings) {
@@ -35,7 +35,7 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
                 const settings = await db.fetchSettings();
                 setFormData(settings);
             }
-            
+
             setIsLoading(false);
         };
         loadSettings();
@@ -111,29 +111,37 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
 
         try {
             console.log('Saving settings:', formData);
-            
-            // Force use localStorage for now
-            const settingsToSave = {
-                libraryName: formData.libraryName,
-                adminPassword: formData.adminPassword,
-                loginLogo: formData.loginLogo,
-                adminPhoto: formData.adminPhoto
-            };
-            
-            localStorage.setItem('literasi_settings', JSON.stringify(settingsToSave));
-            
-            console.log('Settings saved to localStorage successfully');
-            console.log('Current localStorage:', localStorage.getItem('literasi_settings'));
-            
-            setSuccess('Pengaturan berhasil disimpan!');
-            setConfirmPassword('');
-            
-            // Update App state immediately without reload
-            window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: settingsToSave }));
-            
+            setIsLoading(true); // Show loading feedback
+
+            // Save to Database (Server)
+            const success = await db.updateSettings(formData);
+
+            if (success) {
+                // Determine source of data to broadcast
+                const settingsToSave = {
+                    libraryName: formData.libraryName,
+                    adminPassword: formData.adminPassword,
+                    loginLogo: formData.loginLogo,
+                    adminPhoto: formData.adminPhoto
+                };
+
+                // Also save to local storage as backup/fast cache
+                localStorage.setItem('literasi_settings', JSON.stringify(settingsToSave));
+
+                setSuccess('Pengaturan berhasil disimpan ke Database!');
+                setConfirmPassword('');
+
+                // Update App state immediately without reload
+                window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: settingsToSave }));
+            } else {
+                throw new Error('Gagal menyimpan ke database');
+            }
+
         } catch (error) {
             console.error('Error saving settings:', error);
-            setError('Terjadi kesalahan saat menyimpan pengaturan.');
+            setError('Terjadi kesalahan saat menyimpan pengaturan. Pastikan koneksi internet stabil.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
