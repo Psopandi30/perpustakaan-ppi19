@@ -41,9 +41,9 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
     // Set content ke string kosong karena tidak digunakan
     onSave({ ...formData, content: '' });
   };
-  
+
   const formFields = [
-    { name: 'judul', label: 'Judul Jurnal', type: 'text' },
+    { name: 'judul', label: 'Judul Karya Tulis Santri', type: 'text' },
     { name: 'namaPenulis', label: 'Nama Penulis', type: 'text' },
     { name: 'tanggalTerbit', label: 'Tanggal Terbit', type: 'date' },
     { name: 'drafLink', label: 'Link Draf Google Drive', type: 'text' },
@@ -77,7 +77,7 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
     >
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
-          <h2 className="text-xl font-semibold text-gray-800">Edit Jurnal</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Edit Karya Tulis Santri</h2>
           <button onClick={onClose} aria-label="Close modal">
             <XIcon className="h-6 w-6 text-gray-500 hover:text-gray-800" />
           </button>
@@ -116,7 +116,7 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
               />
             )}
           </div>
-          
+
           {error && (
             <p className="text-red-500 text-sm" role="alert">
               {error}
