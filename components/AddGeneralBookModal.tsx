@@ -34,7 +34,7 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
   };
 
   const formFields = [
-    { name: 'judul', label: 'Judul Skripsi', type: 'text' },
+    { name: 'judul', label: 'Judul Buku', type: 'text' },
     { name: 'namaPenulis', label: 'Nama Penulis', type: 'text' },
     { name: 'tanggalTerbit', label: 'Tanggal Terbit', type: 'date' },
     { name: 'drafLink', label: 'Link Draf Google Drive', type: 'text' },
