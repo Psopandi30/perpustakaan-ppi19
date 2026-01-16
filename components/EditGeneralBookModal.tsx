@@ -38,9 +38,9 @@ const EditGeneralBookModal: React.FC<EditGeneralBookModalProps> = ({ book, onClo
     }
     onSave(formData);
   };
-  
+
   const formFields = [
-    { name: 'judul', label: 'Judul Skripsi', type: 'text' },
+    { name: 'judul', label: 'Judul Buku', type: 'text' },
     { name: 'namaPenulis', label: 'Nama Penulis', type: 'text' },
     { name: 'tanggalTerbit', label: 'Tanggal Terbit', type: 'date' },
     { name: 'drafLink', label: 'Draf / Masukan link Google Drive', type: 'text' },
@@ -74,7 +74,7 @@ const EditGeneralBookModal: React.FC<EditGeneralBookModalProps> = ({ book, onClo
     >
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center p-4 border-b sticky top-0 bg-white">
-          <h2 className="text-xl font-semibold text-gray-800">Edit Skripsi</h2>
+          <h2 className="text-xl font-semibold text-gray-800">Edit Buku</h2>
           <button onClick={onClose} aria-label="Close modal">
             <XIcon className="h-6 w-6 text-gray-500 hover:text-gray-800" />
           </button>
@@ -113,7 +113,7 @@ const EditGeneralBookModal: React.FC<EditGeneralBookModalProps> = ({ book, onClo
               />
             )}
           </div>
-          
+
           {error && (
             <p className="text-red-500 text-sm" role="alert">
               {error}
