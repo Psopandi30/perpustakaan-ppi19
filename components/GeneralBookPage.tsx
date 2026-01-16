@@ -36,7 +36,7 @@ const GeneralBookPage: React.FC = () => {
             setIsAddModalOpen(false);
             db.addNotification({
                 type: 'buku-umum',
-                title: 'Skripsi Baru Tersedia!',
+                title: 'Buku Baru Tersedia!',
                 message: `Buku "${addedBook.judul}" telah ditambahkan. Silakan baca sekarang!`,
                 timestamp: new Date(),
                 isRead: false,
@@ -84,7 +84,7 @@ const GeneralBookPage: React.FC = () => {
                     <button
                         onClick={() => setIsAddModalOpen(true)}
                         className="flex items-center justify-center bg-green-500 text-white font-bold p-2 rounded shadow hover:bg-green-600 transition-colors duration-300"
-                        title="Tambahkan Skripsi"
+                        title="Tambahkan Buku"
                     >
                         <PlusIcon className="h-6 w-6" />
                     </button>
@@ -146,7 +146,7 @@ const GeneralBookPage: React.FC = () => {
                             {books.length === 0 && (
                                 <tr>
                                     <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                                        Tidak ada data skripsi.
+                                        Tidak ada data buku.
                                     </td>
                                 </tr>
                             )}

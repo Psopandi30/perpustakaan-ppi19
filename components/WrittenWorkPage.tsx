@@ -36,25 +36,25 @@ const WrittenWorkPage: React.FC = () => {
             setIsAddModalOpen(false);
             db.addNotification({
                 type: 'karya-tulis',
-                title: 'Jurnal Baru Tersedia!',
-                message: `Jurnal "${addedWork.judul}" telah ditambahkan. Silakan baca sekarang!`,
+                title: 'Karya Tulis Santri Baru Tersedia!',
+                message: `Karya Tulis "${addedWork.judul}" telah ditambahkan. Silakan baca sekarang!`,
                 timestamp: new Date(),
                 isRead: false,
             });
-            toast.success('Jurnal berhasil ditambahkan dan notifikasi terkirim.');
+            toast.success('Karya Tulis Santri berhasil ditambahkan dan notifikasi terkirim.');
         } else {
-            toast.error('Gagal menambahkan jurnal. Silakan coba lagi.');
+            toast.error('Gagal menambahkan karya tulis santri. Silakan coba lagi.');
         }
     };
 
     const handleDelete = async (id: number) => {
-        if (window.confirm('Apakah Anda yakin ingin menghapus jurnal ini?')) {
+        if (window.confirm('Apakah Anda yakin ingin menghapus karya tulis santri ini?')) {
             const success = await db.deleteWrittenWork(id);
             if (success) {
                 setWorks(works.filter(work => work.id !== id));
-                toast.success('Jurnal berhasil dihapus.');
+                toast.success('Karya Tulis Santri berhasil dihapus.');
             } else {
-                toast.error('Gagal menghapus jurnal.');
+                toast.error('Gagal menghapus karya tulis santri.');
             }
         }
     };
@@ -64,9 +64,9 @@ const WrittenWorkPage: React.FC = () => {
         if (success) {
             setWorks(works.map(w => w.id === updatedWork.id ? updatedWork : w));
             setEditingWork(null);
-            toast.success('Jurnal berhasil diperbarui.');
+            toast.success('Karya Tulis Santri berhasil diperbarui.');
         } else {
-            toast.error('Gagal mengupdate jurnal.');
+            toast.error('Gagal mengupdate karya tulis santri.');
         }
     };
 
@@ -87,7 +87,7 @@ const WrittenWorkPage: React.FC = () => {
                     <button
                         onClick={() => setIsAddModalOpen(true)}
                         className="flex items-center justify-center bg-green-500 text-white font-bold p-2 rounded shadow hover:bg-green-600 transition-colors duration-300"
-                        title="Tambahkan Jurnal"
+                        title="Tambahkan Karya Tulis Santri"
                     >
                         <PlusIcon className="h-6 w-6" />
                     </button>
@@ -98,7 +98,7 @@ const WrittenWorkPage: React.FC = () => {
                         <thead className="bg-gray-100 border-b-2 border-gray-300 sticky top-0 z-10">
                             <tr>
                                 <th className="px-4 py-3 text-left font-semibold text-gray-600">No</th>
-                                <th className="px-4 py-3 text-left font-semibold text-gray-600">Judul Jurnal</th>
+                                <th className="px-4 py-3 text-left font-semibold text-gray-600">Judul Karya Tulis Santri</th>
                                 <th className="px-4 py-3 text-left font-semibold text-gray-600">Tahun Terbit</th>
                                 <th className="px-4 py-3 text-left font-semibold text-gray-600">Penulis</th>
                                 <th className="px-4 py-3 text-left font-semibold text-gray-600">Cover</th>
@@ -149,7 +149,7 @@ const WrittenWorkPage: React.FC = () => {
                             {works.length === 0 && (
                                 <tr>
                                     <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                                        Tidak ada data jurnal.
+                                        Tidak ada data karya tulis santri.
                                     </td>
                                 </tr>
                             )}
