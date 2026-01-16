@@ -49,7 +49,7 @@ const gridItems: UserDashboardGridItem[] = [
     { id: 'quran', label: 'Al-Quran', icon: QuranIcon },
     { id: 'hadist', label: 'Hadist', icon: HadithIcon },
     { id: 'karya-tulis', label: 'Karya Tulis Santri', icon: WritingIcon },
-    { id: 'buku-umum', label: 'Karya Asatidz', icon: BookIcon },
+    { id: 'buku-umum', label: 'Buku Umum', icon: BookIcon },
     { id: 'materi-dakwah', label: 'Materi Dakwah', icon: FolderIcon },
     { id: 'karya-asatidz', label: 'Karya Ulama Persis', icon: GraduationCapIcon },
     { id: 'khutbah-jumat', label: "Khutbah Jum'at", icon: SermonIcon },
