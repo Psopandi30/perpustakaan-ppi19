@@ -58,7 +58,16 @@ const gridItems: UserDashboardGridItem[] = [
 
 const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, onUpdateUser, settings }) => {
     const [currentDate, setCurrentDate] = useState({ day: '', date: '' });
-    const [activePage, setActivePage] = useState('home');
+    const [activePage, setActivePage] = useState(() => {
+        const savedPage = sessionStorage.getItem(`activePage_${user.id}`);
+        return savedPage || 'home';
+    });
+
+    useEffect(() => {
+        if (activePage) {
+            sessionStorage.setItem(`activePage_${user.id}`, activePage);
+        }
+    }, [activePage, user.id]);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [information, setInformation] = useState<Information | null>(null);
