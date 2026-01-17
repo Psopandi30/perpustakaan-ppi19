@@ -51,7 +51,7 @@ const gridItems: UserDashboardGridItem[] = [
     { id: 'karya-tulis', label: 'Karya Tulis Santri', icon: WritingIcon },
     { id: 'buku-umum', label: 'Buku Umum', icon: BookIcon },
     { id: 'materi-dakwah', label: 'Materi Dakwah', icon: FolderIcon },
-    { id: 'karya-asatidz', label: 'Karya Ulama Persis', icon: GraduationCapIcon },
+    { id: 'karya-asatidz', label: 'Karya Ulama', icon: GraduationCapIcon },
     { id: 'khutbah-jumat', label: "Khutbah Jum'at", icon: SermonIcon },
     { id: 'chat-admin', label: 'Chat admin', icon: ChatIcon },
 ];
@@ -308,8 +308,8 @@ const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, o
                                 )}
                             </div>
                             <div>
-                                <p className="text-lg">Assalamualaikum</p>
-                                <h1 className="text-2xl font-bold uppercase">{user.namaLengkap}</h1>
+                                <p className="text-[10px]">Assalamualaikum</p>
+                                <h1 className="text-sm font-bold uppercase">{user.namaLengkap}</h1>
                             </div>
                         </div>
                         <button
