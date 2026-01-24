@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { User, UserDashboardGridItem, Notification, Information } from '../types';
 import {
     UserCircleIcon,
@@ -20,18 +20,17 @@ import NotificationPanel from './NotificationPanel';
 import Loading from './Loading';
 import * as db from '../db';
 
-// Lazy load semua user page components untuk code splitting
-const UserRadioStreamingPage = lazy(() => import('./UserRadioStreamingPage'));
-const UserChatPage = lazy(() => import('./UserChatPage'));
-const UserAccountPage = lazy(() => import('./UserAccountPage'));
-const UserBulletinPage = lazy(() => import('./UserBulletinPage'));
-const UserHadithPage = lazy(() => import('./UserHadithPage'));
-const UserQuranPage = lazy(() => import('./UserQuranPage'));
-const UserWrittenWorkPage = lazy(() => import('./UserWrittenWorkPage'));
-const UserGeneralBookPage = lazy(() => import('./UserGeneralBookPage'));
-const UserMateriDakwahPage = lazy(() => import('./UserMateriDakwahPage'));
-const UserKaryaAsatidzPage = lazy(() => import('./UserKaryaAsatidzPage'));
-const UserKhutbahJumatPage = lazy(() => import('./UserKhutbahJumatPage'));
+import UserRadioStreamingPage from './UserRadioStreamingPage';
+import UserChatPage from './UserChatPage';
+import UserAccountPage from './UserAccountPage';
+import UserBulletinPage from './UserBulletinPage';
+import UserHadithPage from './UserHadithPage';
+import UserQuranPage from './UserQuranPage';
+import UserWrittenWorkPage from './UserWrittenWorkPage';
+import UserGeneralBookPage from './UserGeneralBookPage';
+import UserMateriDakwahPage from './UserMateriDakwahPage';
+import UserKaryaAsatidzPage from './UserKaryaAsatidzPage';
+import UserKhutbahJumatPage from './UserKhutbahJumatPage';
 
 interface UserDashboardPageProps {
     user: User;
@@ -218,80 +217,58 @@ const UserDashboardPage: React.FC<UserDashboardPageProps> = ({ user, onLogout, o
         switch (activePage) {
             case 'radio':
                 return (
-                    <Suspense fallback={<Loading message="Memuat live streaming..." />}>
-                        <UserRadioStreamingPage
-                            user={user}
-                            onBack={() => setActivePage('home')}
-                        />
-                    </Suspense>
+                    <UserRadioStreamingPage
+                        user={user}
+                        onBack={() => setActivePage('home')}
+                    />
                 );
             case 'chat':
                 return (
-                    <Suspense fallback={<Loading message="Memuat chat..." />}>
-                        <UserChatPage
-                            user={user}
-                            onBack={() => setActivePage('home')}
-                        />
-                    </Suspense>
+                    <UserChatPage
+                        user={user}
+                        onBack={() => setActivePage('home')}
+                    />
                 );
             case 'account':
                 return (
-                    <Suspense fallback={<Loading message="Memuat akun..." />}>
-                        <UserAccountPage
-                            user={user}
-                            onLogout={onLogout}
-                            onNavigate={handleNavigation}
-                            onUpdateUser={onUpdateUser}
-                        />
-                    </Suspense>
+                    <UserAccountPage
+                        user={user}
+                        onLogout={onLogout}
+                        onNavigate={handleNavigation}
+                        onUpdateUser={onUpdateUser}
+                    />
                 );
             case 'bulletin':
                 return (
-                    <Suspense fallback={<Loading message="Memuat buletin..." />}>
-                        <UserBulletinPage onBack={() => setActivePage('home')} />
-                    </Suspense>
+                    <UserBulletinPage onBack={() => setActivePage('home')} />
                 );
             case 'hadist':
                 return (
-                    <Suspense fallback={<Loading message="Memuat hadist..." />}>
-                        <UserHadithPage onBack={() => setActivePage('home')} />
-                    </Suspense>
+                    <UserHadithPage onBack={() => setActivePage('home')} />
                 );
             case 'quran':
                 return (
-                    <Suspense fallback={<Loading message="Memuat Al-Quran..." />}>
-                        <UserQuranPage onBack={() => setActivePage('home')} />
-                    </Suspense>
+                    <UserQuranPage onBack={() => setActivePage('home')} />
                 );
             case 'karya-tulis':
                 return (
-                    <Suspense fallback={<Loading message="Memuat karya tulis..." />}>
-                        <UserWrittenWorkPage onBack={() => setActivePage('home')} />
-                    </Suspense>
+                    <UserWrittenWorkPage onBack={() => setActivePage('home')} />
                 );
             case 'buku-umum':
                 return (
-                    <Suspense fallback={<Loading message="Memuat buku umum..." />}>
-                        <UserGeneralBookPage onBack={() => setActivePage('home')} />
-                    </Suspense>
+                    <UserGeneralBookPage onBack={() => setActivePage('home')} />
                 );
             case 'materi-dakwah':
                 return (
-                    <Suspense fallback={<Loading message="Memuat materi dakwah..." />}>
-                        <UserMateriDakwahPage onBack={() => setActivePage('home')} />
-                    </Suspense>
+                    <UserMateriDakwahPage onBack={() => setActivePage('home')} />
                 );
             case 'karya-asatidz':
                 return (
-                    <Suspense fallback={<Loading message="Memuat karya asatidz..." />}>
-                        <UserKaryaAsatidzPage onBack={() => setActivePage('home')} />
-                    </Suspense>
+                    <UserKaryaAsatidzPage onBack={() => setActivePage('home')} />
                 );
             case 'khutbah-jumat':
                 return (
-                    <Suspense fallback={<Loading message="Memuat khutbah jumat..." />}>
-                        <UserKhutbahJumatPage onBack={() => setActivePage('home')} />
-                    </Suspense>
+                    <UserKhutbahJumatPage onBack={() => setActivePage('home')} />
                 );
             case 'home':
             default:

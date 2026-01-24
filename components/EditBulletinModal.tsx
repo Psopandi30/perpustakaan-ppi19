@@ -16,12 +16,14 @@ const EditBulletinModal: React.FC<EditBulletinModalProps> = ({ bulletin, onClose
     tanggalTerbit: toDateInputValue(bulletin.tanggalTerbit),
   });
   const [error, setError] = useState<string | null>(null);
+  const [isFeatured, setIsFeatured] = useState(false);
 
   useEffect(() => {
     setFormData({
       ...bulletin,
       tanggalTerbit: toDateInputValue(bulletin.tanggalTerbit),
     });
+    setIsFeatured(bulletin.isFeatured || false);
   }, [bulletin]);
 
   // FIX: Update handleChange to handle both input and textarea elements.
@@ -37,9 +39,9 @@ const EditBulletinModal: React.FC<EditBulletinModalProps> = ({ bulletin, onClose
       setError('Semua kolom wajib diisi.');
       return;
     }
-    onSave(formData);
+    onSave({ ...formData, isFeatured });
   };
-  
+
   const formFields = [
     { name: 'judul', label: 'Judul Buletin', type: 'text' },
     { name: 'namaPenulis', label: 'Nama Penulis', type: 'text' },
@@ -90,7 +92,7 @@ const EditBulletinModal: React.FC<EditBulletinModalProps> = ({ bulletin, onClose
                 type={field.type}
                 id={`edit-${field.name}`}
                 name={field.name}
-                value={formData[field.name as keyof Omit<Bulletin, 'id' | 'content'>]}
+                value={String(formData[field.name as keyof Omit<Bulletin, 'id' | 'content'>])}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
               />
@@ -128,12 +130,25 @@ const EditBulletinModal: React.FC<EditBulletinModalProps> = ({ bulletin, onClose
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
             />
           </div>
-          
+
           {error && (
             <p className="text-red-500 text-sm" role="alert">
               {error}
             </p>
           )}
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="editIsFeaturedBulletin"
+              checked={isFeatured}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+              className="rounded border-gray-300 text-brand-yellow focus:ring-brand-yellow"
+            />
+            <label htmlFor="editIsFeaturedBulletin" className="text-sm text-gray-700 font-medium">
+              Tampilkan di Rak Depan/Beranda
+            </label>
+          </div>
 
           <div className="flex justify-end items-center pt-4 space-x-3">
             <button

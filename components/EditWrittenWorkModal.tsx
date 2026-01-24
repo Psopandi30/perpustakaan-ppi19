@@ -16,12 +16,14 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
     tanggalTerbit: toDateInputValue(work.tanggalTerbit),
   });
   const [error, setError] = useState<string | null>(null);
+  const [isFeatured, setIsFeatured] = useState(work.isFeatured || false); // Initialize isFeatured state
 
   useEffect(() => {
     setFormData({
       ...work,
       tanggalTerbit: toDateInputValue(work.tanggalTerbit),
     });
+    setIsFeatured(work.isFeatured || false); // Update isFeatured state when work prop changes
   }, [work]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -39,7 +41,7 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
       return;
     }
     // Set content ke string kosong karena tidak digunakan
-    onSave({ ...formData, content: '' });
+    onSave({ ...formData, content: '', isFeatured: isFeatured }); // Include isFeatured in the saved data
   };
 
   const formFields = [
@@ -92,7 +94,7 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
                 type={field.type}
                 id={`edit-${field.name}`}
                 name={field.name}
-                value={formData[field.name as keyof Omit<WrittenWork, 'id' | 'content'>]}
+                value={String(formData[field.name as keyof Omit<WrittenWork, 'id' | 'content'>])}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
               />
@@ -122,6 +124,19 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
               {error}
             </p>
           )}
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="editIsFeatured"
+              checked={isFeatured}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+              className="rounded border-gray-300 text-brand-yellow focus:ring-brand-yellow"
+            />
+            <label htmlFor="editIsFeatured" className="text-sm text-gray-700 font-medium">
+              Tampilkan di Rak Depan/Beranda
+            </label>
+          </div>
 
           <div className="flex justify-end items-center pt-4 space-x-3">
             <button

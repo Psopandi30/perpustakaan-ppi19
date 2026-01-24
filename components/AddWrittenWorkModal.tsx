@@ -16,12 +16,19 @@ const AddWrittenWorkModal: React.FC<AddWrittenWorkModalProps> = ({ onClose, onSa
     coverLink: '',
     drafLink: '',
     content: '', // Tetap ada untuk kompatibilitas, tapi tidak ditampilkan di form
+    isFeatured: false, // Added isFeatured state
   });
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    // Cast target to HTMLInputElement to access 'checked' property safely check type
+    const checked = (e.target as HTMLInputElement).checked;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
     setError(null);
   };
 
@@ -29,7 +36,10 @@ const AddWrittenWorkModal: React.FC<AddWrittenWorkModalProps> = ({ onClose, onSa
     e.preventDefault();
     // Validasi hanya field yang ditampilkan (content diabaikan)
     const { content, ...fieldsToValidate } = formData;
-    if (Object.values(fieldsToValidate).some(val => typeof val === 'string' && val.trim() === '')) {
+    // Exclude isFeatured from string validation, as it's a boolean
+    const { isFeatured, ...stringFieldsToValidate } = fieldsToValidate;
+
+    if (Object.values(stringFieldsToValidate).some(val => typeof val === 'string' && val.trim() === '')) {
       setError('Semua kolom wajib diisi.');
       return;
     }
@@ -87,7 +97,7 @@ const AddWrittenWorkModal: React.FC<AddWrittenWorkModalProps> = ({ onClose, onSa
                 type={field.type}
                 id={`add-${field.name}`}
                 name={field.name}
-                value={formData[field.name as keyof typeof formData]}
+                value={String(formData[field.name as keyof typeof formData])}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
               />
@@ -110,6 +120,21 @@ const AddWrittenWorkModal: React.FC<AddWrittenWorkModalProps> = ({ onClose, onSa
                 className="mt-3 h-32 w-full object-cover rounded-md border"
               />
             )}
+          </div>
+
+          {/* isFeatured checkbox */}
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              id="add-isFeatured"
+              name="isFeatured"
+              checked={formData.isFeatured}
+              onChange={handleChange}
+              className="h-4 w-4 text-dark-teal border-gray-300 rounded focus:ring-dark-teal"
+            />
+            <label htmlFor="add-isFeatured" className="ml-2 block text-sm text-gray-900">
+              Tampilkan di Beranda (Featured)
+            </label>
           </div>
 
           {error && (

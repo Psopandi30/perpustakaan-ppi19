@@ -13,6 +13,7 @@ const UserDashboardPage = lazy(() => import('./components/UserDashboardPage'));
 const App: React.FC = () => {
   const [loggedInUser, setLoggedInUser] = useState<User | 'admin' | null>(null);
   const [showLogin, setShowLogin] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [settings, setSettings] = useState<Settings>({
     libraryName: 'PERPUSTAKAAN DIGITAL PPI 19 GARUT',
     adminPassword: 'ppi19adm', // Default password sebagai fallback
@@ -92,6 +93,8 @@ const App: React.FC = () => {
           localStorage.removeItem('literasi_session');
         }
       }
+
+      setIsInitializing(false);
     };
 
     initializeApp();
@@ -158,6 +161,10 @@ const App: React.FC = () => {
   };
 
   const renderContent = () => {
+    if (isInitializing) {
+      return <Loading message="Memuat aplikasi..." />;
+    }
+
     // If user is logged in, show dashboard
     if (loggedInUser) {
       if (loggedInUser === 'admin') {

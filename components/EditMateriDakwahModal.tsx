@@ -16,12 +16,14 @@ const EditMateriDakwahModal: React.FC<EditMateriDakwahModalProps> = ({ work, onC
     tanggalTerbit: toDateInputValue(work.tanggalTerbit),
   });
   const [error, setError] = useState<string | null>(null);
+  const [isFeatured, setIsFeatured] = useState(false);
 
   useEffect(() => {
     setFormData({
       ...work,
       tanggalTerbit: toDateInputValue(work.tanggalTerbit),
     });
+    setIsFeatured(work.isFeatured || false);
   }, [work]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,9 +38,9 @@ const EditMateriDakwahModal: React.FC<EditMateriDakwahModalProps> = ({ work, onC
       setError('Semua kolom wajib diisi.');
       return;
     }
-    onSave(formData);
+    onSave({ ...formData, isFeatured });
   };
-  
+
   const formFields = [
     { name: 'judul', label: 'Judul Materi Dakwah', type: 'text' },
     { name: 'namaPenulis', label: 'Nama Penulis', type: 'text' },
@@ -89,7 +91,7 @@ const EditMateriDakwahModal: React.FC<EditMateriDakwahModalProps> = ({ work, onC
                 type={field.type}
                 id={`edit-${field.name}`}
                 name={field.name}
-                value={formData[field.name as keyof Omit<MateriDakwah, 'id'>]}
+                value={String(formData[field.name as keyof Omit<MateriDakwah, 'id'>])}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
               />
@@ -113,12 +115,25 @@ const EditMateriDakwahModal: React.FC<EditMateriDakwahModalProps> = ({ work, onC
               />
             )}
           </div>
-          
+
           {error && (
             <p className="text-red-500 text-sm" role="alert">
               {error}
             </p>
           )}
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="editIsFeaturedMateri"
+              checked={isFeatured}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+              className="rounded border-gray-300 text-brand-yellow focus:ring-brand-yellow"
+            />
+            <label htmlFor="editIsFeaturedMateri" className="text-sm text-gray-700 font-medium">
+              Tampilkan di Rak Depan/Beranda
+            </label>
+          </div>
 
           <div className="flex justify-end items-center pt-4 space-x-3">
             <button

@@ -58,6 +58,7 @@ export interface Bulletin {
   namaPenulis: string;
   tanggalTerbit: string;
   content: string;
+  isFeatured?: boolean;
 }
 
 export interface WrittenWork {
@@ -68,6 +69,7 @@ export interface WrittenWork {
   coverLink: string;
   drafLink: string;
   content: string;
+  isFeatured?: boolean;
 }
 
 export interface GeneralBook {
@@ -77,6 +79,7 @@ export interface GeneralBook {
   tanggalTerbit: string;
   coverLink: string;
   drafLink: string;
+  isFeatured?: boolean;
 }
 
 export interface KaryaAsatidz {
@@ -86,6 +89,7 @@ export interface KaryaAsatidz {
   tanggalTerbit: string;
   coverLink: string;
   drafLink: string;
+  isFeatured?: boolean;
 }
 
 export interface MateriDakwah {
@@ -95,6 +99,7 @@ export interface MateriDakwah {
   tanggalTerbit: string;
   coverLink: string;
   drafLink: string;
+  isFeatured?: boolean;
 }
 
 export interface KhutbahJumat {
@@ -104,6 +109,7 @@ export interface KhutbahJumat {
   tanggalTerbit: string;
   coverLink: string;
   drafLink: string;
+  isFeatured?: boolean;
 }
 
 // FIX: Add the missing 'Hadith' type definition.

@@ -15,6 +15,7 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
     tanggalTerbit: '',
     coverLink: '',
     drafLink: '',
+    isFeatured: false,
   });
   const [error, setError] = useState<string | null>(null);
 
@@ -83,7 +84,7 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
                 type={field.type}
                 id={`add-${field.name}`}
                 name={field.name}
-                value={formData[field.name as keyof typeof formData]}
+                value={String(formData[field.name as keyof typeof formData])}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
               />
@@ -106,6 +107,20 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
                 className="mt-3 h-32 w-full object-cover rounded-md border"
               />
             )}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="add-isFeatured"
+              name="isFeatured"
+              checked={!!formData.isFeatured}
+              onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))}
+              className="w-4 h-4 text-dark-teal border-gray-300 rounded focus:ring-dark-teal"
+            />
+            <label htmlFor="add-isFeatured" className="text-sm text-gray-700">
+              Tampilkan di Rak Depan/Beranda
+            </label>
           </div>
 
           {error && (

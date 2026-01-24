@@ -15,24 +15,30 @@ const AddMateriDakwahModal: React.FC<AddMateriDakwahModalProps> = ({ onClose, on
     tanggalTerbit: '',
     coverLink: '',
     drafLink: '',
+    isFeatured: false,
   });
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
     setError(null);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (Object.values(formData).some(val => typeof val === 'string' && val.trim() === '')) {
+    const { isFeatured, ...stringFields } = formData;
+    if (Object.values(stringFields).some(val => typeof val === 'string' && val.trim() === '')) {
       setError('Semua kolom wajib diisi.');
       return;
     }
     onSave(formData);
   };
-  
+
   const formFields = [
     { name: 'judul', label: 'Judul Materi Dakwah', type: 'text' },
     { name: 'namaPenulis', label: 'Nama Penulis', type: 'text' },
@@ -83,7 +89,7 @@ const AddMateriDakwahModal: React.FC<AddMateriDakwahModalProps> = ({ onClose, on
                 type={field.type}
                 id={`add-${field.name}`}
                 name={field.name}
-                value={formData[field.name as keyof typeof formData]}
+                value={String(formData[field.name as keyof typeof formData])}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
               />
@@ -107,7 +113,21 @@ const AddMateriDakwahModal: React.FC<AddMateriDakwahModalProps> = ({ onClose, on
               />
             )}
           </div>
-          
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="addIsFeaturedMateri"
+              name="isFeatured"
+              checked={formData.isFeatured}
+              onChange={handleChange}
+              className="rounded border-gray-300 text-brand-yellow focus:ring-brand-yellow"
+            />
+            <label htmlFor="addIsFeaturedMateri" className="text-sm text-gray-700 font-medium">
+              Tampilkan di Rak Depan/Beranda
+            </label>
+          </div>
+
           {error && (
             <p className="text-red-500 text-sm" role="alert">
               {error}

@@ -89,7 +89,7 @@ const EditGeneralBookModal: React.FC<EditGeneralBookModalProps> = ({ book, onClo
                 type={field.type}
                 id={`edit-${field.name}`}
                 name={field.name}
-                value={formData[field.name as keyof Omit<GeneralBook, 'id'>]}
+                value={String(formData[field.name as keyof Omit<GeneralBook, 'id'>])}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
               />
@@ -112,6 +112,20 @@ const EditGeneralBookModal: React.FC<EditGeneralBookModalProps> = ({ book, onClo
                 className="mt-3 h-32 w-full object-cover rounded-md border"
               />
             )}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="edit-isFeatured"
+              name="isFeatured"
+              checked={!!formData.isFeatured}
+              onChange={(e) => setFormData(prev => ({ ...prev, isFeatured: e.target.checked }))}
+              className="w-4 h-4 text-dark-teal border-gray-300 rounded focus:ring-dark-teal"
+            />
+            <label htmlFor="edit-isFeatured" className="text-sm text-gray-700">
+              Tampilkan di Rak Depan/Beranda
+            </label>
           </div>
 
           {error && (

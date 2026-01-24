@@ -10,7 +10,12 @@ interface UserBulletinPageProps {
 
 const UserBulletinDetailPage: React.FC<{ bulletin: Bulletin; onBack: () => void }> = ({ bulletin, onBack }) => {
     const [isReading, setIsReading] = useState(false);
+    const [zoom, setZoom] = useState(1);
     const coverUrl = resolveImageUrl(bulletin.coverLink);
+
+    const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3));
+    const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5));
+    const handleResetZoom = () => setZoom(1);
 
     const getGoogleDriveEmbedUrl = (url: string) => {
         const fileIdMatch = url.match(/\/d\/(.*?)\/|id=(.*?)(&|$)/);
@@ -33,17 +38,35 @@ const UserBulletinDetailPage: React.FC<{ bulletin: Bulletin; onBack: () => void 
                         onClick={() => setIsReading(false)}
                         className="flex items-center space-x-1 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-md transition-colors flex-shrink-0 ml-2"
                     >
-                        <ArrowLeftIcon className="w-5 h-5" />
                         <span className="text-sm">Kembali ke Sampul</span>
                     </button>
                 </header>
-                <main className="flex-grow flex flex-col h-[calc(100vh-64px)]">
-                    <iframe
-                        src={getGoogleDriveEmbedUrl(bulletin.drafLink)}
-                        className="w-full h-full border-none"
-                        title="PDF Viewer"
-                        allow="autoplay"
-                    />
+
+                {/* Mobile Zoom Controls Toolbar */}
+                <div className="bg-gray-800 text-white p-2 flex justify-center items-center space-x-4 shadow-inner">
+                    <button onClick={handleZoomOut} className="p-1 px-3 bg-white/10 rounded hover:bg-white/20">-</button>
+                    <span className="text-xs font-mono w-12 text-center">{Math.round(zoom * 100)}%</span>
+                    <button onClick={handleZoomIn} className="p-1 px-3 bg-white/10 rounded hover:bg-white/20">+</button>
+                    <button onClick={handleResetZoom} className="text-xs text-yellow-400 ml-2 hover:text-yellow-300">Reset</button>
+                </div>
+
+                <main className="flex-grow flex flex-col h-[calc(100vh-64px)] overflow-auto bg-gray-200 relative">
+                    <div
+                        style={{
+                            width: `${zoom * 100}%`,
+                            height: zoom > 1 ? `${zoom * 100}%` : '100%',
+                            minHeight: '100%',
+                            display: 'flex',
+                            transition: 'width 0.2s ease, height 0.2s ease'
+                        }}
+                    >
+                        <iframe
+                            src={getGoogleDriveEmbedUrl(bulletin.drafLink)}
+                            className="w-full h-full border-none flex-grow"
+                            title="PDF Viewer"
+                            allow="autoplay"
+                        />
+                    </div>
                 </main>
             </div>
         );

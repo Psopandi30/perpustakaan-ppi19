@@ -554,8 +554,8 @@ const createModuleHelpers = <T extends { id: number }, TRaw>(
 const mw = createModuleHelpers<WrittenWork, any>(
     'written_works',
     LOCAL_STORAGE_KEYS.WRITTEN_WORKS,
-    w => ({ id: w.id, judul: w.judul, namaPenulis: w.nama_penulis, tanggalTerbit: w.tanggal_terbit, coverLink: w.cover_link, drafLink: w.draf_link, content: w.content }),
-    w => ({ judul: w.judul, nama_penulis: w.namaPenulis, tanggal_terbit: w.tanggalTerbit, cover_link: w.coverLink, draf_link: w.drafLink, content: w.content })
+    w => ({ id: w.id, judul: w.judul, namaPenulis: w.nama_penulis, tanggalTerbit: w.tanggal_terbit, coverLink: w.cover_link, drafLink: w.draf_link, content: w.content, isFeatured: w.is_featured }),
+    w => ({ judul: w.judul, nama_penulis: w.namaPenulis, tanggal_terbit: w.tanggalTerbit, cover_link: w.coverLink, draf_link: w.drafLink, content: w.content, is_featured: w.isFeatured })
 );
 export const fetchWrittenWorks = mw.fetch;
 export const addWrittenWork = mw.add;
@@ -566,8 +566,8 @@ export const deleteWrittenWork = mw.delete;
 const mgb = createModuleHelpers<GeneralBook, any>(
     'general_books',
     LOCAL_STORAGE_KEYS.GENERAL_BOOKS,
-    b => ({ id: b.id, judul: b.judul, namaPenulis: b.nama_penulis, tanggalTerbit: b.tanggal_terbit, coverLink: b.cover_link, drafLink: b.draf_link }),
-    b => ({ judul: b.judul, nama_penulis: b.namaPenulis, tanggal_terbit: b.tanggalTerbit, cover_link: b.coverLink, draf_link: b.drafLink })
+    b => ({ id: b.id, judul: b.judul, namaPenulis: b.nama_penulis, tanggalTerbit: b.tanggal_terbit, coverLink: b.cover_link, drafLink: b.draf_link, isFeatured: b.is_featured }),
+    b => ({ judul: b.judul, nama_penulis: b.namaPenulis, tanggal_terbit: b.tanggalTerbit, cover_link: b.coverLink, draf_link: b.drafLink, is_featured: b.isFeatured })
 );
 export const fetchGeneralBooks = mgb.fetch;
 export const addGeneralBook = mgb.add;
@@ -578,8 +578,8 @@ export const deleteGeneralBook = mgb.delete;
 const mka = createModuleHelpers<KaryaAsatidz, any>(
     'karya_asatidz',
     LOCAL_STORAGE_KEYS.KARYA_ASATIDZ,
-    k => ({ id: k.id, judul: k.judul, namaPenulis: k.nama_penulis, tanggalTerbit: k.tanggal_terbit, coverLink: k.cover_link, drafLink: k.draf_link }),
-    k => ({ judul: k.judul, nama_penulis: k.namaPenulis, tanggal_terbit: k.tanggalTerbit, cover_link: k.coverLink, draf_link: k.drafLink })
+    k => ({ id: k.id, judul: k.judul, namaPenulis: k.nama_penulis, tanggalTerbit: k.tanggal_terbit, coverLink: k.cover_link, drafLink: k.draf_link, isFeatured: k.is_featured }),
+    k => ({ judul: k.judul, nama_penulis: k.namaPenulis, tanggal_terbit: k.tanggalTerbit, cover_link: k.coverLink, draf_link: k.drafLink, is_featured: k.isFeatured })
 );
 export const fetchKaryaAsatidz = mka.fetch;
 import type { User, RadioStreamData, Information, ChatThread, Bulletin, WrittenWork, GeneralBook, KaryaAsatidz, MateriDakwah, KhutbahJumat, Settings, Notification, ChatMessage, Banner, Article, PlaylistItem } from './types';
@@ -588,8 +588,8 @@ import type { User, RadioStreamData, Information, ChatThread, Bulletin, WrittenW
 const mmd = createModuleHelpers<MateriDakwah, any>(
     'materi_dakwah',
     LOCAL_STORAGE_KEYS.MATERI_DAKWAH,
-    m => ({ id: m.id, judul: m.judul, namaPenulis: m.nama_penulis, tanggalTerbit: m.tanggal_terbit, coverLink: m.cover_link, drafLink: m.draf_link }),
-    m => ({ judul: m.judul, nama_penulis: m.namaPenulis, tanggal_terbit: m.tanggalTerbit, cover_link: m.coverLink, draf_link: m.drafLink })
+    m => ({ id: m.id, judul: m.judul, namaPenulis: m.nama_penulis, tanggalTerbit: m.tanggal_terbit, coverLink: m.cover_link, drafLink: m.draf_link, isFeatured: m.is_featured }),
+    m => ({ judul: m.judul, nama_penulis: m.namaPenulis, tanggal_terbit: m.tanggalTerbit, cover_link: m.coverLink, draf_link: m.drafLink, is_featured: m.isFeatured })
 );
 export const fetchMateriDakwah = mmd.fetch;
 export const addMateriDakwah = mmd.add;
@@ -600,8 +600,8 @@ export const deleteMateriDakwah = mmd.delete;
 const mkj = createModuleHelpers<KhutbahJumat, any>(
     'khutbah_jumat',
     LOCAL_STORAGE_KEYS.KHUTBAH_JUMAT,
-    k => ({ id: k.id, judul: k.judul, namaPenulis: k.nama_penulis, tanggalTerbit: k.tanggal_terbit, coverLink: k.cover_link, drafLink: k.draf_link }),
-    k => ({ judul: k.judul, nama_penulis: k.namaPenulis, tanggal_terbit: k.tanggalTerbit, cover_link: k.coverLink, draf_link: k.drafLink })
+    k => ({ id: k.id, judul: k.judul, namaPenulis: k.nama_penulis, tanggalTerbit: k.tanggal_terbit, coverLink: k.cover_link, drafLink: k.draf_link, isFeatured: k.is_featured }),
+    k => ({ judul: k.judul, nama_penulis: k.namaPenulis, tanggal_terbit: k.tanggalTerbit, cover_link: k.coverLink, draf_link: k.drafLink, is_featured: k.isFeatured })
 );
 export const fetchKhutbahJumat = mkj.fetch;
 export const addKhutbahJumat = mkj.add;
