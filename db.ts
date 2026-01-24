@@ -518,6 +518,16 @@ const createModuleHelpers = <T extends { id: number }, TRaw>(
             }
             const dbItem = reverseMapper(item);
             const { data, error } = await supabase.from(tableName).insert(dbItem).select().single();
+
+            // Fallback: If insert fails (likely due to missing column), try without is_featured
+            if (error && (dbItem as any).is_featured !== undefined) {
+                console.warn(`Failed to insert with is_featured, retrying without it. Table: ${tableName}`);
+                const { is_featured, ...rest } = dbItem as any;
+                const { data: retryData, error: retryError } = await supabase.from(tableName).insert(rest).select().single();
+                if (retryError) return null;
+                return mapper(retryData as unknown as TRaw);
+            }
+
             if (error) return null;
             return mapper(data as unknown as TRaw);
         },
@@ -533,8 +543,16 @@ const createModuleHelpers = <T extends { id: number }, TRaw>(
                 return false;
             }
             const dbItem = reverseMapper(item);
-            // @ts-expect-error - Supabase update type inference issue with generic table names
             const { error } = await supabase.from(tableName).update(dbItem).eq('id', item.id);
+
+            // Fallback: If update fails, try without is_featured
+            if (error && (dbItem as any).is_featured !== undefined) {
+                console.warn(`Failed to update with is_featured, retrying without it. Table: ${tableName}`);
+                const { is_featured, ...rest } = dbItem as any;
+                const { error: retryError } = await supabase.from(tableName).update(rest).eq('id', item.id);
+                return !retryError;
+            }
+
             return !error;
         },
         delete: async (id: number): Promise<boolean> => {
