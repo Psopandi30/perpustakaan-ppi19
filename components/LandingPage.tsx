@@ -91,7 +91,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
         setArticles(articleData ? articleData.slice(0, 5) : []);
 
         // Aggregate featured items from all categories
-        const allFeatured: any[] = [
+        let allFeatured: any[] = [
           ...(booksData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'general' })),
           ...(writtenData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'written' })),
           ...(bulletinData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'bulletin' })),
@@ -100,8 +100,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
           ...(khutbahData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'khutbah' })),
         ];
 
-        // Shuffle or sort? Let's just shuffle for variety or keep them mixed.
-        // For now, simple concat is fine.
+        // Fallback: If no items are featured manually, show the latest items from each category
+        if (allFeatured.length === 0) {
+          const latestLimit = 2; // Take top 2 from each
+          allFeatured = [
+            ...(booksData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'general' })),
+            ...(writtenData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'written' })),
+            ...(bulletinData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'bulletin' })),
+            ...(asatidzData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'asatidz' })),
+            ...(materiData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'materi' })),
+            ...(khutbahData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'khutbah' })),
+          ];
+          // Sort nicely (randomized or by ID) to mix them
+          allFeatured.sort(() => 0.5 - Math.random());
+        }
+
         setFeaturedBooks(allFeatured);
       } catch (error) {
         console.error('Error loading landing page data:', error);
