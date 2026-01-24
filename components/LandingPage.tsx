@@ -583,16 +583,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                 </div>
               </div>
 
-              {selectedBook.drafLink && (
-                <a
-                  href={selectedBook.drafLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-2.5 bg-dark-teal text-white text-center rounded-lg font-medium hover:bg-teal-800 transition-colors shadow-sm"
-                >
-                  Buka Buku
-                </a>
-              )}
+              {/* Gatekeeper: Login required to read */}
+              <button
+                onClick={() => {
+                  setSelectedBook(null); // Close detail modal
+                  onLoginClick(); // Open login modal
+                }}
+                className="block w-full py-2.5 bg-dark-teal text-white text-center rounded-lg font-medium hover:bg-teal-800 transition-colors shadow-sm flex items-center justify-center gap-2"
+              >
+                <UserIcon className="w-4 h-4" />
+                Login untuk Membaca
+              </button>
             </div>
           </div>
         </div>
