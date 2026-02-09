@@ -11,7 +11,7 @@ export const fetchPlaylist = async (): Promise<PlaylistItem[]> => {
     return (data as any[] || []).map(item => ({
         id: item.id,
         title: item.title,
-        youtube_link: item.youtube_link,
+        youtubeLink: item.youtube_link,
         order: item.order,
         isActive: item.is_active
     }));

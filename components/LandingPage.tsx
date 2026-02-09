@@ -96,24 +96,27 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
         ]);
 
         // Filter and sort active playlist items
-        const activeItems = (playlistData || []).filter(i => i.isActive).sort((a, b) => a.order - b.order);
+        const activeItems = (playlistData || []).filter(i => i && i.isActive).sort((a, b) => a.order - b.order);
         setPlaylist(activeItems);
 
         if (infoData && infoData.length > 0) {
-          setInformation(infoData[infoData.length - 1]);
+          const validInfo = infoData.filter(i => i !== null);
+          if (validInfo.length > 0) {
+            setInformation(validInfo[validInfo.length - 1]);
+          }
         }
-        setBanners(bannerData ? bannerData.slice(0, 2) : []);
-        setArticles(articleData ? articleData.slice(0, 5) : []);
+        setBanners(bannerData ? bannerData.filter(b => b && b.isActive).slice(0, 2) : []);
+        setArticles(articleData ? articleData.filter(a => a !== null).slice(0, 5) : []);
 
         // Aggregate featured items from all categories
         let allFeatured: any[] = [
-          ...(booksData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'general' })),
-          ...(writtenData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'written' })),
-          ...(bulletinData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'bulletin' })),
-          ...(asatidzData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'asatidz' })),
-          ...(materiData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'materi' })),
-          ...(khutbahData || []).filter(b => b.isFeatured).map(b => ({ ...b, itemType: 'khutbah' })),
-        ];
+          ...(booksData || []).filter(b => b && b.isFeatured).map(b => ({ ...b, itemType: 'general' })),
+          ...(writtenData || []).filter(b => b && b.isFeatured).map(b => ({ ...b, itemType: 'written' })),
+          ...(bulletinData || []).filter(b => b && b.isFeatured).map(b => ({ ...b, itemType: 'bulletin' })),
+          ...(asatidzData || []).filter(b => b && b.isFeatured).map(b => ({ ...b, itemType: 'asatidz' })),
+          ...(materiData || []).filter(b => b && b.isFeatured).map(b => ({ ...b, itemType: 'materi' })),
+          ...(khutbahData || []).filter(b => b && b.isFeatured).map(b => ({ ...b, itemType: 'khutbah' })),
+        ].filter(item => item !== null && item !== undefined);
 
         // Fallback: If no items are featured manually, show the latest items from each category
         if (allFeatured.length === 0) {
@@ -125,7 +128,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
             ...(asatidzData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'asatidz' })),
             ...(materiData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'materi' })),
             ...(khutbahData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'khutbah' })),
-          ];
+          ].filter(item => item !== null && item !== undefined);
           // Sort nicely (randomized or by ID) to mix them
           allFeatured.sort(() => 0.5 - Math.random());
         }
@@ -160,17 +163,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
       const infoId = urlParams.get('infoId');
 
       if (articleId && data.articles) {
-        const found = data.articles.find(a => String(a.id) === articleId);
+        const found = data.articles.find(a => a && String(a.id) === articleId);
         if (found) setSelectedArticle(found);
       }
 
       if (bookId && data.books) {
-        const found = data.books.find(b => String(b.id) === bookId);
+        const found = data.books.find(b => b && String(b.id) === bookId);
         if (found) setSelectedBook(found);
       }
 
       if (infoId && data.info) {
-        const found = data.info.find(i => String(i.id) === infoId);
+        const found = data.info.find(i => i && String(i.id) === infoId);
         if (found) setSelectedInfo(found);
       }
 
@@ -208,6 +211,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
 
   // Helper to extract Video ID for Playlist Construction
   const getYoutubeVideoId = (url: string) => {
+    if (!url || typeof url !== 'string') return null;
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
