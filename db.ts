@@ -1,3 +1,6 @@
+import { supabase } from './lib/supabase';
+import type { User, RadioStreamData, Information, ChatThread, Bulletin, WrittenWork, GeneralBook, KaryaAsatidz, MateriDakwah, KhutbahJumat, Settings, Notification, ChatMessage, Banner, Article, PlaylistItem } from './types';
+
 // --- Playlist ---
 export const fetchPlaylist = async (): Promise<PlaylistItem[]> => {
     if (!supabase) {
@@ -8,7 +11,7 @@ export const fetchPlaylist = async (): Promise<PlaylistItem[]> => {
     return (data as any[] || []).map(item => ({
         id: item.id,
         title: item.title,
-        youtubeLink: item.youtube_link,
+        youtube_link: item.youtube_link,
         order: item.order,
         isActive: item.is_active
     }));
@@ -77,8 +80,6 @@ export const deletePlaylistItem = async (id: number): Promise<boolean> => {
     const { error } = await supabase.from('playlist_items').delete().eq('id', id);
     return !error;
 };
-
-import { supabase } from './lib/supabase';
 
 // --- Local Storage Helpers ---
 const LOCAL_STORAGE_KEYS = {
@@ -605,7 +606,9 @@ const mka = createModuleHelpers<KaryaAsatidz, any>(
     k => ({ judul: k.judul, nama_penulis: k.namaPenulis, tanggal_terbit: k.tanggalTerbit, cover_link: k.coverLink, draf_link: k.drafLink, is_featured: k.isFeatured })
 );
 export const fetchKaryaAsatidz = mka.fetch;
-import type { User, RadioStreamData, Information, ChatThread, Bulletin, WrittenWork, GeneralBook, KaryaAsatidz, MateriDakwah, KhutbahJumat, Settings, Notification, ChatMessage, Banner, Article, PlaylistItem } from './types';
+export const addKaryaAsatidz = mka.add;
+export const updateKaryaAsatidz = mka.update;
+export const deleteKaryaAsatidz = mka.delete;
 
 // --- Materi Dakwah ---
 const mmd = createModuleHelpers<MateriDakwah, any>(

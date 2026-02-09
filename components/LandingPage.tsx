@@ -117,7 +117,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
 
         // Fallback: If no items are featured manually, show the latest items from each category
         if (allFeatured.length === 0) {
-          const latestLimit = 2; // Take top 2 from each
+          const latestLimit = 4; // Take top 4 from each category if nothing is featured
           allFeatured = [
             ...(booksData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'general' })),
             ...(writtenData || []).slice(0, latestLimit).map(b => ({ ...b, itemType: 'written' })),
@@ -130,27 +130,58 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
           allFeatured.sort(() => 0.5 - Math.random());
         }
 
-        setFeaturedBooks(allFeatured.slice(0, 10)); // Batasi hanya 10 buku di rak
+        const featured = allFeatured.slice(0, 10); // Batasi hanya 10 buku di rak
+        setFeaturedBooks(featured);
+
+        return {
+          articles: articleData,
+          books: allFeatured, // Return all featured/fallback books for lookup
+          info: infoData
+        };
       } catch (error) {
         console.error('Error loading landing page data:', error);
         setPlaylist([]);
         setInformation(null);
         setBanners([]);
         setArticles([]);
+        return null;
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadData();
+    const initializeParams = async () => {
+      const data = await loadData();
+      if (!data) return;
 
-    // Detect autoplay parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('autoplay') === 'radio') {
-      setShowAutoplayPrompt(true);
-    } else {
-      setIsRadioPlaying(true); // Default behavior
-    }
+      const urlParams = new URLSearchParams(window.location.search);
+      const articleId = urlParams.get('articleId');
+      const bookId = urlParams.get('bookId');
+      const infoId = urlParams.get('infoId');
+
+      if (articleId && data.articles) {
+        const found = data.articles.find(a => String(a.id) === articleId);
+        if (found) setSelectedArticle(found);
+      }
+
+      if (bookId && data.books) {
+        const found = data.books.find(b => String(b.id) === bookId);
+        if (found) setSelectedBook(found);
+      }
+
+      if (infoId && data.info) {
+        const found = data.info.find(i => String(i.id) === infoId);
+        if (found) setSelectedInfo(found);
+      }
+
+      if (urlParams.get('autoplay') === 'radio') {
+        setShowAutoplayPrompt(true);
+      } else {
+        setIsRadioPlaying(true);
+      }
+    };
+
+    initializeParams();
 
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
@@ -318,13 +349,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                             });
                           } else {
                             navigator.clipboard.writeText(radioUrl);
-                            alert('Link Radio berhasil disalin!');
+                            toast.success('Link Radio berhasil disalin!');
                           }
                         }}
-                        className="bg-white/10 hover:bg-white/20 text-gray-600 p-1.5 rounded-full border border-gray-200 transition-colors"
+                        className="flex items-center gap-1.5 bg-white hover:bg-gray-50 text-dark-teal px-2.5 py-1.5 rounded-full border border-gray-200 shadow-sm transition-all hover:shadow-md group"
                         title="Bagikan Radio"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
+                        <svg className="w-3.5 h-3.5 text-gray-500 group-hover:text-dark-teal transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Bagikan</span>
                       </button>
 
                       <div className={`flex items-center gap-3 px-3 py-1.5 rounded-full border transition-all duration-500 ${isRadioPlaying ? 'bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700 shadow-md' : 'bg-gray-50 border-gray-200'}`}>
@@ -539,11 +571,40 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                   articles.map((article) => (
                     <div
                       key={article.id}
-                      onClick={() => setSelectedArticle(article)}
-                      className="p-3 hover:bg-gray-50 transition-colors cursor-pointer group"
+                      className="p-3 hover:bg-gray-50 transition-colors cursor-pointer group border-b border-gray-50 last:border-0"
                     >
-                      <h3 className="font-medium text-gray-800 text-sm line-clamp-2 group-hover:text-dark-teal mb-1">{article.judul}</h3>
-                      <div className="flex items-center text-[10px] text-gray-400 gap-1">
+                      <div className="flex justify-between items-start gap-2">
+                        <h3
+                          onClick={() => setSelectedArticle(article)}
+                          className="font-medium text-gray-800 text-sm line-clamp-2 group-hover:text-dark-teal mb-1 flex-1"
+                        >
+                          {article.judul}
+                        </h3>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const shareUrl = `${window.location.origin}${window.location.pathname}?articleId=${article.id}`;
+                            if (navigator.share) {
+                              navigator.share({
+                                title: article.judul,
+                                text: `Baca artikel menarik: ${article.judul}`,
+                                url: shareUrl,
+                              });
+                            } else {
+                              navigator.clipboard.writeText(shareUrl);
+                              toast.success('Link Artikel disalin!');
+                            }
+                          }}
+                          className="p-1 text-gray-400 hover:text-dark-teal transition-colors"
+                          title="Bagikan Artikel"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
+                        </button>
+                      </div>
+                      <div
+                        onClick={() => setSelectedArticle(article)}
+                        className="flex items-center text-[10px] text-gray-400 gap-1"
+                      >
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         {new Date(article.tanggalTerbit).toLocaleDateString('id-ID', {
                           day: 'numeric',
@@ -618,16 +679,37 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
               </div>
 
               {/* Gatekeeper: Login required to read */}
-              <button
-                onClick={() => {
-                  setSelectedBook(null); // Close detail modal
-                  onLoginClick(); // Open login modal
-                }}
-                className="block w-full py-2.5 bg-dark-teal text-white text-center rounded-lg font-medium hover:bg-teal-800 transition-colors shadow-sm flex items-center justify-center gap-2"
-              >
-                <UserIcon className="w-4 h-4" />
-                Login untuk Membaca
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setSelectedBook(null); // Close detail modal
+                    onLoginClick(); // Open login modal
+                  }}
+                  className="flex-1 py-2.5 bg-dark-teal text-white text-center rounded-lg font-medium hover:bg-teal-800 transition-colors shadow-sm flex items-center justify-center gap-2"
+                >
+                  <UserIcon className="w-4 h-4" />
+                  Login untuk Membaca
+                </button>
+                <button
+                  onClick={() => {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?bookId=${selectedBook.id}`;
+                    if (navigator.share) {
+                      navigator.share({
+                        title: selectedBook.judul,
+                        text: `Lihat buku menarik: ${selectedBook.judul}`,
+                        url: shareUrl,
+                      });
+                    } else {
+                      navigator.clipboard.writeText(shareUrl);
+                      toast.success('Link Buku disalin!');
+                    }
+                  }}
+                  className="w-12 bg-gray-100 hover:bg-gray-200 text-dark-teal flex items-center justify-center rounded-lg transition-colors border border-gray-200"
+                  title="Bagikan Buku"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -671,22 +753,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                 {/* Share Button */}
                 <button
                   onClick={() => {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?articleId=${selectedArticle.id}`;
                     const shareData = {
                       title: selectedArticle.judul,
                       text: `Baca artikel: ${selectedArticle.judul}`,
-                      url: window.location.href,
+                      url: shareUrl,
                     };
                     if (navigator.share) {
                       navigator.share(shareData);
                     } else {
-                      navigator.clipboard.writeText(window.location.href);
-                      alert('Link artikel berhasil disalin!');
+                      navigator.clipboard.writeText(shareUrl);
+                      toast.success('Link artikel berhasil disalin!');
                     }
                   }}
-                  className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-dark-teal transition-colors flex items-center gap-2 flex-shrink-0"
+                  className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-dark-teal transition-colors flex items-center gap-2 flex-shrink-0 group"
                   title="Bagikan Artikel"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
+                  <svg className="w-5 h-5 text-gray-500 group-hover:text-dark-teal transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
                   <span className="text-xs font-bold hidden sm:inline">Bagikan</span>
                 </button>
               </div>
@@ -821,11 +904,32 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
 
             {/* Modal Content */}
             <div className="p-6 overflow-y-auto max-h-[70vh]">
-              <div className="mb-4">
-                <div className="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1">
-                  {new Date(selectedInfo.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex-1">
+                  <div className="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1">
+                    {new Date(selectedInfo.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </div>
+                  <h1 className="text-2xl font-bold text-gray-900 leading-tight">{selectedInfo.judul}</h1>
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 leading-tight">{selectedInfo.judul}</h1>
+                <button
+                  onClick={() => {
+                    const shareUrl = `${window.location.origin}${window.location.pathname}?infoId=${selectedInfo.id}`;
+                    if (navigator.share) {
+                      navigator.share({
+                        title: selectedInfo.judul,
+                        text: `Informasi: ${selectedInfo.judul}`,
+                        url: shareUrl,
+                      });
+                    } else {
+                      navigator.clipboard.writeText(shareUrl);
+                      toast.success('Link Informasi disalin!');
+                    }
+                  }}
+                  className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors border border-blue-100"
+                  title="Bagikan Informasi"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
+                </button>
               </div>
               <div className="w-12 h-1 bg-brand-yellow rounded-full mb-6"></div>
               <div className="prose prose-blue max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
