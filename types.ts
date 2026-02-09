@@ -193,6 +193,7 @@ export interface Article {
   konten?: string;
   tanggalTerbit: string;
   imageUrl?: string;
+  namaPenulis?: string;
 }
 
 export interface PrayerTime {

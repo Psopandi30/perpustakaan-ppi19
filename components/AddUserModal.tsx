@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { User } from '../types';
-import { XIcon } from './icons/Icons';
+import { XIcon, EyeIcon, EyeSlashIcon } from './icons/Icons';
 
 interface AddUserModalProps {
   onClose: () => void;
@@ -17,6 +17,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
     password: '',
     akunStatus: 'Aktif' as 'Aktif' | 'Tidak aktif',
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -76,9 +77,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
               className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
             >
               <option value="">Pilih Status</option>
-              <option value="santri">Santri</option>
+              <option value="Santri">Santri</option>
               <option value="Asatidz">Asatidz</option>
               <option value="Staf">Staf</option>
+              <option value="Tamu">Tamu</option>
             </select>
           </div>
 
@@ -113,7 +115,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
 
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-              Username/NIS/NISN
+              Username/NISN/NIS/NIP/NIAT
             </label>
             <input
               type="text"
@@ -129,14 +131,27 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ onClose, onSave }) => {
             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
               Password
             </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
+            </div>
           </div>
 
           <div>

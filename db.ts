@@ -502,9 +502,14 @@ const createModuleHelpers = <T extends { id: number }, TRaw>(
     reverseMapper: (item: Omit<T, 'id'>) => any
 ) => {
     return {
-        fetch: async (): Promise<T[]> => {
-            if (!supabase) return getLocalData<T>(storageKey);
-            const { data, error } = await supabase.from(tableName).select('*');
+        fetch: async (limit?: number): Promise<T[]> => {
+            if (!supabase) {
+                const data = getLocalData<T>(storageKey);
+                return limit ? data.slice(0, limit) : data;
+            }
+            let query = supabase.from(tableName).select('*').order('id', { ascending: false });
+            if (limit) query = query.limit(limit);
+            const { data, error } = await query;
             if (error) return [];
             return (data as any[]).map(mapper);
         },
@@ -863,12 +868,16 @@ export const deleteBanner = async (id: number): Promise<boolean> => {
 };
 
 // --- Articles ---
-export const fetchArticles = async (): Promise<Article[]> => {
+export const fetchArticles = async (limit?: number): Promise<Article[]> => {
     if (!supabase) {
-        return getLocalData<Article>(LOCAL_STORAGE_KEYS.ARTICLES);
+        const data = getLocalData<Article>(LOCAL_STORAGE_KEYS.ARTICLES);
+        return limit ? data.slice(0, limit) : data;
     }
 
-    const { data, error } = await supabase.from('articles').select('*').order('tanggal_terbit', { ascending: false });
+    let query = supabase.from('articles').select('*').order('tanggal_terbit', { ascending: false });
+    if (limit) query = query.limit(limit);
+
+    const { data, error } = await query;
     if (error) {
         console.error('Error fetching articles:', error);
         return [];
@@ -878,7 +887,8 @@ export const fetchArticles = async (): Promise<Article[]> => {
         judul: a.judul,
         konten: a.konten,
         tanggalTerbit: a.tanggal_terbit,
-        imageUrl: a.image_url
+        imageUrl: a.image_url,
+        namaPenulis: a.nama_penulis
     }));
 };
 
@@ -895,7 +905,8 @@ export const addArticle = async (article: Omit<Article, 'id'>): Promise<Article 
         judul: article.judul,
         konten: article.konten || null,
         tanggal_terbit: article.tanggalTerbit,
-        image_url: article.imageUrl || null
+        image_url: article.imageUrl || null,
+        nama_penulis: article.namaPenulis || null
     };
     const { data, error } = await supabase.from('articles').insert(dbArticle as any).select().single();
     if (error) {
@@ -908,7 +919,8 @@ export const addArticle = async (article: Omit<Article, 'id'>): Promise<Article 
         judul: a.judul,
         konten: a.konten,
         tanggalTerbit: a.tanggal_terbit,
-        imageUrl: a.image_url
+        imageUrl: a.image_url,
+        namaPenulis: a.nama_penulis
     };
 };
 
@@ -928,7 +940,8 @@ export const updateArticle = async (article: Article): Promise<boolean> => {
         judul: article.judul,
         konten: article.konten || null,
         tanggal_terbit: article.tanggalTerbit,
-        image_url: article.imageUrl || null
+        image_url: article.imageUrl || null,
+        nama_penulis: article.namaPenulis || null
     };
     // @ts-expect-error - Supabase update type inference issue with mapped types
     const { error } = await supabase.from('articles').update(dbArticle as any).eq('id', article.id);

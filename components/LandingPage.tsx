@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as db from '../db';
 import type { PlaylistItem, Information, Banner, Article, GeneralBook } from '../types';
 import { resolveImageUrl, getYoutubeEmbedUrl } from '../utils/media';
-import { UserIcon } from './icons/Icons';
+import { UserIcon, RadioIcon } from './icons/Icons';
 
 interface LandingPageProps {
   onLoginClick: () => void;
@@ -21,9 +21,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
   const [banners, setBanners] = useState<Banner[]>([]);
   const [articles, setArticles] = useState<Article[]>([]);
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
+  const [selectedInfo, setSelectedInfo] = useState<Information | null>(null);
   const [featuredBooks, setFeaturedBooks] = useState<GeneralBook[]>([]);
   const [selectedBook, setSelectedBook] = useState<GeneralBook | null>(null);
-  const [isRadioPlaying, setIsRadioPlaying] = useState(true); // Default auto-play attempt
+  const [selectedBanner, setSelectedBanner] = useState<Banner | null>(null);
+  const [isRadioPlaying, setIsRadioPlaying] = useState(false); // Default false for autoplay check
+  const [showAutoplayPrompt, setShowAutoplayPrompt] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   // Update time every second
@@ -34,32 +37,44 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
     return () => clearInterval(timer);
   }, []);
 
-  // Calculate Hijri date (simplified)
+  // Fetch Hijri date and Prayer Times from Aladhan API
   useEffect(() => {
-    const calculateHijriDate = () => {
-      const now = new Date();
-      const hijriYear = Math.floor((now.getFullYear() - 622) * 0.97) + 1;
-      const hijriMonth = ['Muharram', 'Safar', 'Rabi\'ul Awal', 'Rabi\'ul Akhir', 'Jumadil Awal', 'Jumadil Akhir', 'Rajab', 'Sya\'ban', 'Ramadhan', 'Syawal', 'Dzulqa\'dah', 'Dzulhijjah'];
-      const monthIndex = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (1000 * 60 * 60 * 24 * 29.5)) % 12;
-      const day = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (1000 * 60 * 60 * 24)) % 30 + 1;
-      setHijriDate(`${day} ${hijriMonth[monthIndex]} ${hijriYear} H`);
-    };
-    calculateHijriDate();
-  }, [currentTime]);
+    const fetchAladhanData = async () => {
+      try {
+        // Method 11 is for Kemenag RI (Indonesia)
+        const response = await fetch('https://api.aladhan.com/v1/timingsByCity?city=Garut&country=Indonesia&method=11');
+        const result = await response.json();
 
-  // Calculate prayer times (simplified for Garut, Indonesia)
-  useEffect(() => {
-    const calculatePrayerTimes = () => {
-      const times = [
-        { name: 'Subuh', time: '04:30' },
-        { name: 'Dzuhur', time: '12:00' },
-        { name: 'Ashar', time: '15:30' },
-        { name: 'Maghrib', time: '18:00' },
-        { name: 'Isya', time: '19:30' }
-      ];
-      setPrayerTimes(times);
+        if (result.code === 200) {
+          const data = result.data;
+
+          // Set Hijri Date in Arabic
+          const hijri = data.date.hijri;
+          // Format: Tanggal Bulan(Arab) Tahun هـ
+          const arabicDate = `${hijri.day} ${hijri.month.ar} ${hijri.year} هـ`;
+          setHijriDate(arabicDate);
+
+          // Set Prayer Times from API
+          const timings = data.timings;
+          const times = [
+            { name: 'Subuh', time: timings.Fajr },
+            { name: 'Dzuhur', time: timings.Dhuhr },
+            { name: 'Ashar', time: timings.Asr },
+            { name: 'Maghrib', time: timings.Maghrib },
+            { name: 'Isya', time: timings.Isha }
+          ];
+          setPrayerTimes(times);
+        }
+      } catch (error) {
+        console.error('Error fetching Aladhan data:', error);
+        // Fallback or handle error (keep existing placeholder if needed)
+      }
     };
-    calculatePrayerTimes();
+
+    fetchAladhanData();
+    // Refresh data every hour (prayer times change slightly each day)
+    const interval = setInterval(fetchAladhanData, 3600000);
+    return () => clearInterval(interval);
   }, []);
 
   // Load data
@@ -71,13 +86,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
           db.fetchPlaylist(),
           db.fetchInformation(),
           db.fetchBanners(),
-          db.fetchArticles(),
-          db.fetchGeneralBooks(),
-          db.fetchWrittenWorks(),
-          db.fetchBulletins(),
-          db.fetchKaryaAsatidz(),
-          db.fetchMateriDakwah(),
-          db.fetchKhutbahJumat()
+          db.fetchArticles(50), // Batasi 50 artikel sesuai permintaan
+          db.fetchGeneralBooks(20), // Batasi fetch awal untuk performa
+          db.fetchWrittenWorks(20),
+          db.fetchBulletins(20),
+          db.fetchKaryaAsatidz(20),
+          db.fetchMateriDakwah(20),
+          db.fetchKhutbahJumat(20)
         ]);
 
         // Filter and sort active playlist items
@@ -115,7 +130,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
           allFeatured.sort(() => 0.5 - Math.random());
         }
 
-        setFeaturedBooks(allFeatured);
+        setFeaturedBooks(allFeatured.slice(0, 10)); // Batasi hanya 10 buku di rak
       } catch (error) {
         console.error('Error loading landing page data:', error);
         setPlaylist([]);
@@ -128,48 +143,20 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
     };
 
     loadData();
+
+    // Detect autoplay parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('autoplay') === 'radio') {
+      setShowAutoplayPrompt(true);
+    } else {
+      setIsRadioPlaying(true); // Default behavior
+    }
+
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Initialize hijri date on mount
-  useEffect(() => {
-    if (!hijriDate) {
-      const now = new Date();
-      const hijriYear = Math.floor((now.getFullYear() - 622) * 0.97) + 1;
-      const hijriMonth = ['Muharram', 'Safar', 'Rabi\'ul Awal', 'Rabi\'ul Akhir', 'Jumadil Awal', 'Jumadil Akhir', 'Rajab', 'Sya\'ban', 'Ramadhan', 'Syawal', 'Dzulqa\'dah', 'Dzulhijjah'];
-      const monthIndex = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (1000 * 60 * 60 * 24 * 29.5)) % 12;
-      const day = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (1000 * 60 * 60 * 24)) % 30 + 1;
-      setHijriDate(`${day} ${hijriMonth[monthIndex]} ${hijriYear} H`);
-    }
-  }, []);
 
-  // Calculate prayer times (simplified for Garut, Indonesia)
-  useEffect(() => {
-    const calculatePrayerTimes = () => {
-      const times = [
-        { name: 'Subuh', time: '04:30' },
-        { name: 'Dzuhur', time: '12:00' },
-        { name: 'Ashar', time: '15:30' },
-        { name: 'Maghrib', time: '18:00' },
-        { name: 'Isya', time: '19:30' }
-      ];
-      setPrayerTimes(times);
-    };
-    calculatePrayerTimes();
-  }, []);
-
-  // Initialize hijri date on mount
-  useEffect(() => {
-    if (!hijriDate) {
-      const now = new Date();
-      const hijriYear = Math.floor((now.getFullYear() - 622) * 0.97) + 1;
-      const hijriMonth = ['Muharram', 'Safar', 'Rabi\'ul Awal', 'Rabi\'ul Akhir', 'Jumadil Awal', 'Jumadil Akhir', 'Rajab', 'Sya\'ban', 'Ramadhan', 'Syawal', 'Dzulqa\'dah', 'Dzulhijjah'];
-      const monthIndex = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (1000 * 60 * 60 * 24 * 29.5)) % 12;
-      const day = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 1).getTime()) / (1000 * 60 * 60 * 24)) % 30 + 1;
-      setHijriDate(`${day} ${hijriMonth[monthIndex]} ${hijriYear} H`);
-    }
-  }, []);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString('id-ID', {
@@ -316,43 +303,66 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                 </h2>
 
                 <div className="flex items-center gap-3">
-                  {/* Radio Player Widget */}
+                  {/* Radio Player Widget & Share */}
                   {!isLoading && isLive && (
-                    <div className={`flex items-center gap-3 px-3 py-1.5 rounded-full border transition-all duration-500 ${isRadioPlaying ? 'bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700 shadow-md' : 'bg-gray-50 border-gray-200'}`}>
-
-                      {/* Status Indicator & Text */}
-                      <div className="flex items-center gap-2">
-                        <span className="relative flex h-2 w-2">
-                          <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isRadioPlaying ? 'bg-green-400' : 'bg-gray-400'}`}></span>
-                          <span className={`relative inline-flex rounded-full h-2 w-2 ${isRadioPlaying ? 'bg-green-500' : 'bg-gray-500'}`}></span>
-                        </span>
-                        <span className={`text-[10px] font-bold uppercase tracking-widest ${isRadioPlaying ? 'text-green-400' : 'text-gray-400'}`}>
-                          {isRadioPlaying ? 'Live Radio' : 'Radio Off'}
-                        </span>
-                      </div>
-
-                      {/* Animated Visualizer (Only visible when playing) */}
-                      {isRadioPlaying && (
-                        <div className="flex items-end gap-0.5 h-3 mx-1">
-                          <div className="w-0.5 bg-green-500 animate-[pulse_0.6s_ease-in-out_infinite] h-full"></div>
-                          <div className="w-0.5 bg-green-500 animate-[pulse_1.1s_ease-in-out_infinite] h-[60%]"></div>
-                          <div className="w-0.5 bg-green-500 animate-[pulse_0.8s_ease-in-out_infinite] h-[90%]"></div>
-                          <div className="w-0.5 bg-green-500 animate-[pulse_1.3s_ease-in-out_infinite] h-[50%]"></div>
-                        </div>
-                      )}
-
-                      {/* Control Button */}
+                    <div className="flex items-center gap-2">
+                      {/* Share Radio Button */}
                       <button
-                        onClick={() => setIsRadioPlaying(!isRadioPlaying)}
-                        className={`w-6 h-6 flex items-center justify-center rounded-full transition-all duration-200 transform hover:scale-110 ${isRadioPlaying ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-dark-teal text-white hover:bg-teal-700'}`}
-                        title={isRadioPlaying ? 'Matikan Suara' : 'Dengarkan Radio'}
+                        onClick={() => {
+                          const radioUrl = `${window.location.origin}${window.location.pathname}?autoplay=radio`;
+                          if (navigator.share) {
+                            navigator.share({
+                              title: 'Dengarkan Radio Literasi',
+                              text: `Ayo dengarkan siaran radio: ${currentTitle}`,
+                              url: radioUrl,
+                            });
+                          } else {
+                            navigator.clipboard.writeText(radioUrl);
+                            alert('Link Radio berhasil disalin!');
+                          }
+                        }}
+                        className="bg-white/10 hover:bg-white/20 text-gray-600 p-1.5 rounded-full border border-gray-200 transition-colors"
+                        title="Bagikan Radio"
                       >
-                        {isRadioPlaying ? (
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
-                        ) : (
-                          <svg className="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                        )}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
                       </button>
+
+                      <div className={`flex items-center gap-3 px-3 py-1.5 rounded-full border transition-all duration-500 ${isRadioPlaying ? 'bg-gradient-to-r from-gray-900 to-gray-800 border-gray-700 shadow-md' : 'bg-gray-50 border-gray-200'}`}>
+
+                        {/* Status Indicator & Text */}
+                        <div className="flex items-center gap-2">
+                          <span className="relative flex h-2 w-2">
+                            <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isRadioPlaying ? 'bg-green-400' : 'bg-gray-400'}`}></span>
+                            <span className={`relative inline-flex rounded-full h-2 w-2 ${isRadioPlaying ? 'bg-green-500' : 'bg-gray-500'}`}></span>
+                          </span>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest ${isRadioPlaying ? 'text-green-400' : 'text-gray-400'}`}>
+                            {isRadioPlaying ? 'Live Radio' : 'Radio Off'}
+                          </span>
+                        </div>
+
+                        {/* Animated Visualizer (Only visible when playing) */}
+                        {isRadioPlaying && (
+                          <div className="flex items-end gap-0.5 h-3 mx-1">
+                            <div className="w-0.5 bg-green-500 animate-[pulse_0.6s_ease-in-out_infinite] h-full"></div>
+                            <div className="w-0.5 bg-green-500 animate-[pulse_1.1s_ease-in-out_infinite] h-[60%]"></div>
+                            <div className="w-0.5 bg-green-500 animate-[pulse_0.8s_ease-in-out_infinite] h-[90%]"></div>
+                            <div className="w-0.5 bg-green-500 animate-[pulse_1.3s_ease-in-out_infinite] h-[50%]"></div>
+                          </div>
+                        )}
+
+                        {/* Control Button */}
+                        <button
+                          onClick={() => setIsRadioPlaying(!isRadioPlaying)}
+                          className={`w-6 h-6 flex items-center justify-center rounded-full transition-all duration-200 transform hover:scale-110 ${isRadioPlaying ? 'bg-gray-700 text-white hover:bg-gray-600' : 'bg-dark-teal text-white hover:bg-teal-700'}`}
+                          title={isRadioPlaying ? 'Matikan Suara' : 'Dengarkan Radio'}
+                        >
+                          {isRadioPlaying ? (
+                            <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" /></svg>
+                          ) : (
+                            <svg className="w-3 h-3 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -416,7 +426,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                               <div className="absolute inset-0 bg-gradient-to-tr from-black/20 to-white/10 pointer-events-none z-10"></div>
 
                               {book.coverLink ? (
-                                <img src={resolveImageUrl(book.coverLink)} alt={book.judul} className="w-full h-full object-cover" />
+                                <img
+                                  src={resolveImageUrl(book.coverLink)}
+                                  alt={book.judul}
+                                  className="w-full h-full object-cover"
+                                  loading="lazy"
+                                />
                               ) : (
                                 <div className="w-full h-full flex flex-col items-center justify-center bg-teal-900 p-2 text-center">
                                   <div className="w-full h-full border border-yellow-500/30 flex items-center justify-center p-1">
@@ -452,14 +467,23 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
               </div>
               <div className="p-4">
                 {information ? (
-                  <div className="bg-blue-50/30 p-4 rounded-xl border border-blue-50 hover:border-blue-100 transition-colors">
+                  <div
+                    onClick={() => setSelectedInfo(information)}
+                    className="bg-blue-50/30 p-4 rounded-xl border border-blue-50 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer group relative"
+                  >
                     <div className="flex items-start justify-between mb-2">
-                      <h3 className="font-semibold text-gray-800 text-base">{information.judul}</h3>
+                      <h3 className="font-semibold text-gray-800 text-base group-hover:text-dark-teal transition-colors">{information.judul}</h3>
                       <span className="text-[10px] text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100 whitespace-nowrap">
                         {new Date(information.tanggal).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                       </span>
                     </div>
-                    <p className="text-gray-600 text-xs md:text-sm leading-relaxed">{information.isi}</p>
+                    <p className="text-gray-600 text-xs md:text-sm leading-relaxed line-clamp-3 mb-3">{information.isi}</p>
+                    <div className="flex justify-end">
+                      <span className="text-[10px] font-bold text-dark-teal uppercase tracking-wider flex items-center gap-1 group-hover:gap-2 transition-all">
+                        Baca Selengkapnya
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M9 5l7 7-7 7"></path></svg>
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-400 text-xs italic">
@@ -480,22 +504,21 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
               <div className="p-4 space-y-3">
                 {banners.length > 0 ? (
                   banners.map((banner) => (
-                    <div key={banner.id} className="group relative overflow-hidden rounded-lg shadow-sm hover:shadow transition-all">
-                      {banner.linkUrl ? (
-                        <a href={banner.linkUrl} target="_blank" rel="noopener noreferrer" className="block">
-                          <img
-                            src={resolveImageUrl(banner.imageUrl)}
-                            alt={banner.judul}
-                            className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-500"
-                          />
-                        </a>
-                      ) : (
-                        <img
-                          src={resolveImageUrl(banner.imageUrl)}
-                          alt={banner.judul}
-                          className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                      )}
+                    <div
+                      key={banner.id}
+                      className="group relative overflow-hidden rounded-lg shadow-sm hover:shadow transition-all cursor-pointer"
+                      onClick={() => setSelectedBanner(banner)}
+                    >
+                      <img
+                        src={resolveImageUrl(banner.imageUrl)}
+                        alt={banner.judul}
+                        className="w-full h-24 object-cover transform group-hover:scale-105 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" /></svg>
+                      </div>
                     </div>
                   ))
                 ) : (
@@ -527,6 +550,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                           month: 'short',
                           year: 'numeric'
                         })}
+                        {article.namaPenulis && (
+                          <>
+                            <span className="mx-1">•</span>
+                            <span className="font-medium text-dark-teal/70">{article.namaPenulis}</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))
@@ -556,7 +585,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
           <div className="bg-white w-full max-w-sm rounded-xl shadow-2xl overflow-hidden flex flex-col animate-slide-up">
             <div className="relative">
               {selectedBook.coverLink ? (
-                <img src={resolveImageUrl(selectedBook.coverLink)} alt={selectedBook.judul} className="w-full h-64 object-cover" />
+                <img
+                  src={resolveImageUrl(selectedBook.coverLink)}
+                  alt={selectedBook.judul}
+                  className="w-full h-64 object-cover"
+                  loading="lazy"
+                />
               ) : (
                 <div className="w-full h-64 bg-dark-teal flex items-center justify-center text-white p-4 text-center">
                   {selectedBook.judul}
@@ -617,10 +651,44 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
 
             {/* Modal Content - Scrollable */}
             <div className="overflow-y-auto p-6">
-              <h1 className="text-2xl font-bold text-dark-teal mb-2">{selectedArticle.judul}</h1>
-              <div className="flex items-center text-sm text-gray-500 mb-6 gap-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                {new Date(selectedArticle.tanggalTerbit).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+              <div className="flex justify-between items-start gap-4 mb-4">
+                <div className="flex-1">
+                  <h1 className="text-2xl font-bold text-dark-teal mb-2">{selectedArticle.judul}</h1>
+                  <div className="flex flex-wrap items-center text-sm text-gray-500 gap-x-4 gap-y-1">
+                    <div className="flex items-center gap-1">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                      {new Date(selectedArticle.tanggalTerbit).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    </div>
+                    {selectedArticle.namaPenulis && (
+                      <div className="flex items-center gap-1 italic">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                        Penulis: {selectedArticle.namaPenulis}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Share Button */}
+                <button
+                  onClick={() => {
+                    const shareData = {
+                      title: selectedArticle.judul,
+                      text: `Baca artikel: ${selectedArticle.judul}`,
+                      url: window.location.href,
+                    };
+                    if (navigator.share) {
+                      navigator.share(shareData);
+                    } else {
+                      navigator.clipboard.writeText(window.location.href);
+                      alert('Link artikel berhasil disalin!');
+                    }
+                  }}
+                  className="p-2.5 bg-gray-100 hover:bg-gray-200 rounded-lg text-dark-teal transition-colors flex items-center gap-2 flex-shrink-0"
+                  title="Bagikan Artikel"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 100-2.684 3 3 0 000 2.684zm0 12.684a3 3 0 100-2.684 3 3 0 000 2.684z" /></svg>
+                  <span className="text-xs font-bold hidden sm:inline">Bagikan</span>
+                </button>
               </div>
 
               {selectedArticle.imageUrl && (
@@ -628,13 +696,38 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                   src={resolveImageUrl(selectedArticle.imageUrl)}
                   alt={selectedArticle.judul}
                   className="w-full md:w-3/4 mx-auto max-h-64 object-cover rounded-xl mb-6 shadow-sm"
+                  loading="lazy"
                 />
               )}
 
               <div
-                className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed text-justify hyphens-auto"
+                className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed text-justify hyphens-auto mb-10"
                 dangerouslySetInnerHTML={{ __html: selectedArticle.konten || '<p>Tidak ada konten.</p>' }}
               />
+
+              {/* Comment Section Placeholder */}
+              <div className="mt-8 pt-8 border-t border-gray-100">
+                <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
+                  Komentar Artikel
+                </h3>
+
+                <div className="bg-gray-50 rounded-xl p-4 mb-6">
+                  <textarea
+                    placeholder="Tulis komentar anda di sini..."
+                    className="w-full bg-white border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-dark-teal/20 focus:border-dark-teal outline-none transition-all resize-none h-24"
+                  ></textarea>
+                  <div className="flex justify-end mt-2">
+                    <button className="bg-dark-teal text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-teal-800 transition-colors">
+                      Kirim Komentar
+                    </button>
+                  </div>
+                </div>
+
+                <div className="text-center py-6 text-gray-400 text-sm italic">
+                  Belum ada komentar. Jadilah yang pertama memberikan tanggapan!
+                </div>
+              </div>
             </div>
 
             {/* Modal Footer */}
@@ -642,6 +735,109 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
               <button
                 onClick={() => setSelectedArticle(null)}
                 className="px-6 py-2 bg-dark-teal text-white rounded-lg hover:bg-teal-800 transition-colors font-medium text-sm"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Banner Preview Modal */}
+      {selectedBanner && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedBanner(null)}>
+          <div className="relative max-w-4xl w-full flex flex-col items-center animate-zoom-in" onClick={e => e.stopPropagation()}>
+            <button
+              onClick={() => setSelectedBanner(null)}
+              className="absolute -top-12 right-0 p-2 text-white hover:text-brand-yellow transition-colors flex items-center gap-2"
+            >
+              <span className="text-sm font-bold">Tutup</span>
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div className="bg-white p-2 rounded-2xl shadow-2xl w-full overflow-hidden">
+              <img
+                src={resolveImageUrl(selectedBanner.imageUrl)}
+                alt={selectedBanner.judul}
+                className="w-full h-auto max-h-[70vh] object-contain rounded-xl"
+              />
+              <div className="p-4 flex justify-between items-center">
+                <h3 className="text-dark-teal font-bold">{selectedBanner.judul}</h3>
+                {selectedBanner.linkUrl && (
+                  <a
+                    href={selectedBanner.linkUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-brand-yellow text-slate-800 px-4 py-2 rounded-lg text-xs font-bold hover:bg-yellow-400 transition-colors"
+                  >
+                    Kunjungi Tautan
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Autoplay Prompt Modal */}
+      {showAutoplayPrompt && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full text-center animate-bounce-in">
+            <div className="w-20 h-20 bg-dark-teal text-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg animate-pulse">
+              <RadioIcon className="w-10 h-10" />
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 mb-2">Radio Literasi</h2>
+            <p className="text-gray-600 text-sm mb-6">Klik tombol di bawah untuk mendengarkan siaran langsung secara otomatis.</p>
+            <button
+              onClick={() => {
+                setIsRadioPlaying(true);
+                setShowAutoplayPrompt(false);
+              }}
+              className="w-full py-4 bg-dark-teal text-white rounded-xl font-bold hover:bg-teal-800 transition-all transform hover:scale-105 shadow-md flex items-center justify-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+              Mulai Mendengarkan
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Service Information Modal */}
+      {selectedInfo && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedInfo(null)}>
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up" onClick={e => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="p-4 border-b flex justify-between items-center bg-gray-50/50">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h2 className="font-bold text-gray-800 text-sm uppercase tracking-wide">Detail Informasi</h2>
+              </div>
+              <button
+                onClick={() => setSelectedInfo(null)}
+                className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto max-h-[70vh]">
+              <div className="mb-4">
+                <div className="text-[10px] text-blue-600 font-bold uppercase tracking-wider mb-1">
+                  {new Date(selectedInfo.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 leading-tight">{selectedInfo.judul}</h1>
+              </div>
+              <div className="w-12 h-1 bg-brand-yellow rounded-full mb-6"></div>
+              <div className="prose prose-blue max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
+                {selectedInfo.isi}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-gray-50 border-t flex justify-end">
+              <button
+                onClick={() => setSelectedInfo(null)}
+                className="px-6 py-2 bg-dark-teal text-white rounded-lg hover:bg-teal-800 transition-colors font-bold text-sm"
               >
                 Tutup
               </button>

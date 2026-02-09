@@ -119,7 +119,7 @@ const UserManagementPage: React.FC<UserManagementPageProps> = () => {
                     <table className="min-w-full bg-white text-sm">
                         <thead className="bg-gray-100 border-b-2 border-gray-300 sticky top-0 z-10">
                             <tr>
-                                {['Nama Lengkap', 'Status', 'Alamat', 'Telepon', 'Username', 'Status Akun', 'Konfirmasi'].map((header) => (
+                                {['Nama Lengkap', 'Status', 'Alamat', 'Telepon', 'Username/NISN/NIS/NIP/NIAT', 'Status Akun', 'Konfirmasi'].map((header) => (
                                     <th key={header} className="px-4 py-3 text-left font-semibold text-gray-600 uppercase tracking-wider bg-gray-100">
                                         {header}
                                     </th>

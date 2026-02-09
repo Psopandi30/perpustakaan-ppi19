@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { User } from '../types';
-import { XIcon } from './icons/Icons';
+import { XIcon, EyeIcon, EyeSlashIcon } from './icons/Icons';
 
 interface EditUserModalProps {
   user: User;
@@ -11,6 +11,7 @@ interface EditUserModalProps {
 const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSave }) => {
   // Initialize with an empty password field
   const [formData, setFormData] = useState({ ...user, password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -33,24 +34,15 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSave }) 
         return;
       }
     }
-    
+
     // Create a user object to save, keeping original password if new one is blank
     const userToSave = { ...formData };
     if (!formData.password) {
-        userToSave.password = user.password;
+      userToSave.password = user.password;
     }
 
     onSave(userToSave);
   };
-  
-  const formFields = [
-    { name: 'namaLengkap', label: 'Nama Lengkap', type: 'text' },
-    { name: 'status', label: 'Status', type: 'text' },
-    { name: 'alamat', label: 'Alamat', type: 'text' },
-    { name: 'telepon', label: 'Telepon', type: 'text' },
-    { name: 'username', label: 'Username', type: 'text' },
-    { name: 'password', label: 'New Password (optional)', type: 'password' },
-  ];
 
   return (
     <div
@@ -66,22 +58,108 @@ const EditUserModal: React.FC<EditUserModalProps> = ({ user, onClose, onSave }) 
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {formFields.map(field => (
-            <div key={field.name}>
-              <label htmlFor={`edit-${field.name}`} className="block text-sm font-medium text-gray-700 mb-1">
-                {field.label}
-              </label>
+          <div>
+            <label htmlFor="edit-namaLengkap" className="block text-sm font-medium text-gray-700 mb-1">
+              Nama Lengkap
+            </label>
+            <input
+              type="text"
+              id="edit-namaLengkap"
+              name="namaLengkap"
+              value={formData.namaLengkap}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="edit-status" className="block text-sm font-medium text-gray-700 mb-1">
+              Status
+            </label>
+            <select
+              id="edit-status"
+              name="status"
+              value={formData.status}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            >
+              <option value="Santri">Santri</option>
+              <option value="Asatidz">Asatidz</option>
+              <option value="Staf">Staf</option>
+              <option value="Tamu">Tamu</option>
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="edit-alamat" className="block text-sm font-medium text-gray-700 mb-1">
+              Alamat
+            </label>
+            <input
+              type="text"
+              id="edit-alamat"
+              name="alamat"
+              value={formData.alamat}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="edit-telepon" className="block text-sm font-medium text-gray-700 mb-1">
+              Telepon
+            </label>
+            <input
+              type="text"
+              id="edit-telepon"
+              name="telepon"
+              value={formData.telepon}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="edit-username" className="block text-sm font-medium text-gray-700 mb-1">
+              Username/NISN/NIS/NIP/NIAT
+            </label>
+            <input
+              type="text"
+              id="edit-username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="edit-password" className="block text-sm font-medium text-gray-700 mb-1">
+              New Password (optional)
+            </label>
+            <div className="relative">
               <input
-                type={field.type}
-                id={`edit-${field.name}`}
-                name={field.name}
-                value={formData[field.name as keyof typeof formData] || ''}
+                type={showPassword ? "text" : "password"}
+                id="edit-password"
+                name="password"
+                value={formData.password}
                 onChange={handleChange}
-                placeholder={field.type === 'password' ? 'Leave blank to keep current' : ''}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+                placeholder="Leave blank to keep current"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal pr-10"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="h-5 w-5" />
+                ) : (
+                  <EyeIcon className="h-5 w-5" />
+                )}
+              </button>
             </div>
-          ))}
+          </div>
+
           <div>
             <label htmlFor="edit-akunStatus" className="block text-sm font-medium text-gray-700 mb-1">
               Setatus Akun
