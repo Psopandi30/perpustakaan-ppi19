@@ -787,10 +787,17 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                 />
               )}
 
-              <div
-                className="prose prose-sm md:prose-base max-w-none text-gray-700 leading-relaxed text-justify hyphens-auto mb-10"
-                dangerouslySetInnerHTML={{ __html: selectedArticle.konten || '<p>Tidak ada konten.</p>' }}
-              />
+              <div className="article-body text-gray-700 mb-10">
+                {selectedArticle.konten ? (
+                  selectedArticle.konten.split(/\n\s*\n/).map((para, idx) => (
+                    <p key={idx} className="whitespace-pre-wrap">
+                      {para.trim()}
+                    </p>
+                  ))
+                ) : (
+                  <p>Tidak ada konten.</p>
+                )}
+              </div>
 
               {/* Comment Section Placeholder */}
               <div className="mt-8 pt-8 border-t border-gray-100">
@@ -936,8 +943,16 @@ const LandingPage: React.FC<LandingPageProps> = ({ onLoginClick, settings }) => 
                 </button>
               </div>
               <div className="w-12 h-1 bg-brand-yellow rounded-full mb-6"></div>
-              <div className="prose prose-blue max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-                {selectedInfo.isi}
+              <div className="article-body text-gray-700">
+                {selectedInfo.isi ? (
+                  selectedInfo.isi.split(/\n\s*\n/).map((para, idx) => (
+                    <p key={idx} className="whitespace-pre-wrap">
+                      {para.trim()}
+                    </p>
+                  ))
+                ) : (
+                  <p>Tidak ada konten.</p>
+                )}
               </div>
             </div>
 

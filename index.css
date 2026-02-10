@@ -7,3 +7,27 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.article-body p {
+  margin-bottom: 1.25rem;
+  text-indent: 2.5rem;
+  text-align: justify;
+  line-height: 1.8;
+}
+
+.article-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* Ensure Arabic text looks good if mixed */
+.article-body {
+  font-size: 1.05rem;
+}
+
+@media (max-width: 640px) {
+  .article-body p {
+    text-indent: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+  }
+}
