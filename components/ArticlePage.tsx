@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import * as db from '../db';
 import type { Article } from '../types';
 import { resolveImageUrl } from '../utils/media';
-import { readFileAsDataURL } from '../utils/file';
+import { isSupportedImage } from '../utils/file';
 
 const ArticlePage: React.FC = () => {
     const [articles, setArticles] = useState<Article[]>([]);
@@ -15,6 +15,7 @@ const ArticlePage: React.FC = () => {
         tanggalTerbit: new Date().toISOString().split('T')[0],
         imageUrl: ''
     });
+    const [isUploading, setIsUploading] = useState(false);
 
     const loadArticles = async () => {
         setIsLoading(true);
@@ -36,17 +37,33 @@ const ArticlePage: React.FC = () => {
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        if (!isSupportedImage(file)) {
+            alert('Format gambar harus JPG atau PNG.');
+            e.target.value = '';
+            return;
+        }
+
+        setIsUploading(true);
+
         try {
-            const dataUrl = await readFileAsDataURL(file);
-            setFormData(prev => ({ ...prev, imageUrl: dataUrl }));
+            const uploadedUrl = await db.uploadFile(file, 'uploads');
+            if (uploadedUrl) {
+                setFormData(prev => ({ ...prev, imageUrl: uploadedUrl }));
+            } else {
+                alert('Gagal mengupload gambar.');
+            }
         } catch (error) {
-            console.error('Error reading image file:', error);
-            alert('Gagal membaca file gambar.');
+            console.error('Error uploading image file:', error);
+            alert('Terjadi kesalahan saat upload.');
+        } finally {
+            setIsUploading(false);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isUploading) return;
         if (!formData.judul || !formData.tanggalTerbit) {
             alert('Judul dan tanggal terbit wajib diisi.');
             return;
@@ -200,18 +217,21 @@ const ArticlePage: React.FC = () => {
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
+                                    disabled={isUploading}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50"
                                 />
-                                {formData.imageUrl && (
-                                    <img src={formData.imageUrl} alt="Preview" className="mt-2 w-full h-32 object-cover rounded" />
+                                {isUploading && <p className="text-xs text-teal-600 mt-1 animate-pulse">Mengupload gambar...</p>}
+                                {formData.imageUrl && !isUploading && (
+                                    <img src={formData.imageUrl} alt="Preview" className="mt-2 w-full h-32 object-cover rounded shadow-sm border" />
                                 )}
                             </div>
                             <div className="flex gap-2">
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-dark-teal text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+                                    disabled={isUploading}
+                                    className="flex-1 bg-dark-teal text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors disabled:bg-gray-400"
                                 >
-                                    {editingArticle ? 'Update' : 'Simpan'}
+                                    {isUploading ? 'Mengupload...' : (editingArticle ? 'Update' : 'Simpan')}
                                 </button>
                                 <button
                                     type="button"

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Settings } from '../types';
-import { readFileAsDataURL, isSupportedImage } from '../utils/file';
-import { SettingsIcon, XIcon } from './icons/Icons';
+import { isSupportedImage } from '../utils/file';
+import { SettingsIcon } from './icons/Icons';
 import * as db from '../db';
 
 interface SettingsPageProps {
@@ -20,6 +20,8 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(true);
+    const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
     useEffect(() => {
         const loadSettings = async () => {
@@ -56,16 +58,24 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             e.target.value = '';
             return;
         }
+
+        setIsUploadingLogo(true);
+        setError(null);
+        setSuccess(null);
+
         try {
-            const dataUrl = await readFileAsDataURL(file);
-            setFormData(prev => ({ ...prev, loginLogo: dataUrl }));
-            setError(null);
-            setSuccess('Logo berhasil diunggah!');
-        } catch (err) {
-            if (process.env.NODE_ENV === 'development') {
-                console.error('Error reading logo file:', err);
+            const imageUrl = await db.uploadFile(file, 'uploads');
+            if (imageUrl) {
+                setFormData(prev => ({ ...prev, loginLogo: imageUrl }));
+                setSuccess('Logo berhasil diunggah!');
+            } else {
+                setError('Gagal mengupload logo.');
             }
-            setError('Gagal membaca file logo.');
+        } catch (err) {
+            console.error('Error uploading logo:', err);
+            setError('Terjadi kesalahan saat upload logo.');
+        } finally {
+            setIsUploadingLogo(false);
         }
     };
 
@@ -77,20 +87,30 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
             e.target.value = '';
             return;
         }
-        if (file.size > 200 * 1024) {
-            setError('Ukuran foto terlalu besar. Maksimal 200KB.');
+        // Increased to 2MB as it goes to storage now
+        if (file.size > 2000 * 1024) {
+            setError('Ukuran foto terlalu besar. Maksimal 2MB.');
             e.target.value = '';
             return;
         }
+
+        setIsUploadingPhoto(true);
+        setError(null);
+        setSuccess(null);
+
         try {
-            const dataUrl = await readFileAsDataURL(file);
-            setFormData(prev => ({ ...prev, adminPhoto: dataUrl }));
-            setError(null);
-        } catch (err) {
-            if (process.env.NODE_ENV === 'development') {
-                console.error('Error reading admin photo file:', err);
+            const imageUrl = await db.uploadFile(file, 'avatars');
+            if (imageUrl) {
+                setFormData(prev => ({ ...prev, adminPhoto: imageUrl }));
+                setSuccess('Foto admin berhasil diunggah!');
+            } else {
+                setError('Gagal mengupload foto admin.');
             }
-            setError('Gagal membaca file foto.');
+        } catch (err) {
+            console.error('Error uploading photo:', err);
+            setError('Terjadi kesalahan saat upload foto.');
+        } finally {
+            setIsUploadingPhoto(false);
         }
     };
 
@@ -219,11 +239,14 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
                     </label>
                     <input
                         type="file"
+                        id="loginLogo"
                         accept="image/png,image/jpeg"
                         onChange={handleLogoChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+                        disabled={isUploadingLogo}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal disabled:opacity-50"
                     />
-                    {formData.loginLogo && (
+                    {isUploadingLogo && <p className="text-xs text-teal-600 mt-1 animate-pulse font-medium">Sedang mengupload logo...</p>}
+                    {formData.loginLogo && !isUploadingLogo && (
                         <div className="mt-3">
                             <p className="text-sm text-gray-600 mb-2">Preview Logo:</p>
                             <div className="w-20 h-20 bg-white rounded-lg flex items-center justify-center shadow-md border border-gray-200 overflow-hidden">
@@ -243,11 +266,14 @@ const SettingsPage: React.FC<SettingsPageProps> = () => {
                     </label>
                     <input
                         type="file"
+                        id="adminPhoto"
                         accept="image/png,image/jpeg"
                         onChange={handlePhotoChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+                        disabled={isUploadingPhoto}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal disabled:opacity-50"
                     />
-                    {formData.adminPhoto && (
+                    {isUploadingPhoto && <p className="text-xs text-teal-600 mt-1 animate-pulse font-medium">Sedang mengupload foto...</p>}
+                    {formData.adminPhoto && !isUploadingPhoto && (
                         <div className="mt-3">
                             <p className="text-sm text-gray-600 mb-2">Preview Foto:</p>
                             <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center shadow-md border-2 border-gray-300 overflow-hidden">

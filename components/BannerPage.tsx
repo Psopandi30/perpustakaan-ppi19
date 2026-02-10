@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { resolveImageUrl } from '../utils/media';
+import { isSupportedImage } from '../utils/file';
 import * as db from '../db';
 import type { Banner } from '../types';
-import { resolveImageUrl } from '../utils/media';
-import { readFileAsDataURL } from '../utils/file';
 
 const BannerPage: React.FC = () => {
     const [banners, setBanners] = useState<Banner[]>([]);
@@ -17,6 +17,7 @@ const BannerPage: React.FC = () => {
         urutan: 1,
         isActive: true
     });
+    const [isUploading, setIsUploading] = useState(false);
 
     const loadBanners = async () => {
         setIsLoading(true);
@@ -38,17 +39,33 @@ const BannerPage: React.FC = () => {
     const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        if (!isSupportedImage(file)) {
+            toast.error('Format gambar harus JPG atau PNG.');
+            e.target.value = '';
+            return;
+        }
+
+        setIsUploading(true);
+
         try {
-            const dataUrl = await readFileAsDataURL(file);
-            setFormData(prev => ({ ...prev, imageUrl: dataUrl }));
+            const uploadedUrl = await db.uploadFile(file, 'banners' as any || 'uploads');
+            if (uploadedUrl) {
+                setFormData(prev => ({ ...prev, imageUrl: uploadedUrl }));
+            } else {
+                toast.error('Gagal mengupload banner.');
+            }
         } catch (error) {
-            console.error('Error reading image file:', error);
-            toast.error('Gagal membaca file gambar.');
+            console.error('Error uploading banner file:', error);
+            toast.error('Terjadi kesalahan saat upload.');
+        } finally {
+            setIsUploading(false);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (isUploading) return;
         if (!formData.judul || !formData.imageUrl) {
             toast.error('Judul dan gambar wajib diisi.');
             return;
@@ -172,11 +189,13 @@ const BannerPage: React.FC = () => {
                                     type="file"
                                     accept="image/*"
                                     onChange={handleImageChange}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-md"
-                                    required={!editingBanner}
+                                    disabled={isUploading}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-md disabled:opacity-50"
+                                    required={!editingBanner && !formData.imageUrl}
                                 />
-                                {formData.imageUrl && (
-                                    <img src={formData.imageUrl} alt="Preview" className="mt-2 w-full h-32 object-cover rounded" />
+                                {isUploading && <p className="text-xs text-teal-600 mt-1 animate-pulse">Mengupload gambar...</p>}
+                                {formData.imageUrl && !isUploading && (
+                                    <img src={formData.imageUrl} alt="Preview" className="mt-2 w-full h-32 object-cover rounded shadow-sm border" />
                                 )}
                             </div>
 
@@ -204,9 +223,10 @@ const BannerPage: React.FC = () => {
                             <div className="flex gap-2">
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-dark-teal text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors"
+                                    disabled={isUploading}
+                                    className="flex-1 bg-dark-teal text-white px-4 py-2 rounded-lg hover:bg-teal-700 transition-colors disabled:bg-gray-400"
                                 >
-                                    {editingBanner ? 'Update' : 'Simpan'}
+                                    {isUploading ? 'Mengupload...' : (editingBanner ? 'Update' : 'Simpan')}
                                 </button>
                                 <button
                                     type="button"

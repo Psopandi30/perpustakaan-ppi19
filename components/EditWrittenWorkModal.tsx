@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import type { WrittenWork } from '../types';
 import { toDateInputValue } from '../utils/date';
-import { readFileAsDataURL, isSupportedImage } from '../utils/file';
+import { isSupportedImage } from '../utils/file';
+import * as db from '../db';
 import { XIcon } from './icons/Icons';
 
 interface EditWrittenWorkModalProps {
@@ -17,6 +18,7 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
   });
   const [error, setError] = useState<string | null>(null);
   const [isFeatured, setIsFeatured] = useState(work.isFeatured || false); // Initialize isFeatured state
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setFormData({
@@ -34,6 +36,7 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isUploading) return;
     // Validasi hanya field yang ditampilkan (content diabaikan)
     const { id, content, ...fieldsToValidate } = formData;
     if (Object.values(fieldsToValidate).some(val => typeof val === 'string' && val.trim() === '')) {
@@ -59,15 +62,22 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
       e.target.value = '';
       return;
     }
+
+    setIsUploading(true);
+    setError(null);
+
     try {
-      const dataUrl = await readFileAsDataURL(file);
-      setFormData(prev => ({ ...prev, coverLink: dataUrl }));
-      setError(null);
-    } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error reading cover file:', err);
+      const imageUrl = await db.uploadFile(file, 'covers');
+      if (imageUrl) {
+        setFormData(prev => ({ ...prev, coverLink: imageUrl }));
+      } else {
+        setError('Gagal mengupload cover.');
       }
-      setError('Gagal membaca file cover.');
+    } catch (err) {
+      console.error('Error uploading cover:', err);
+      setError('Terjadi kesalahan saat upload.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -108,13 +118,15 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
               type="file"
               accept="image/png,image/jpeg"
               onChange={handleCoverChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+              disabled={isUploading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal disabled:opacity-50"
             />
-            {formData.coverLink && (
+            {isUploading && <p className="text-xs text-teal-600 mt-1 animate-pulse font-medium">Sedang mengupload...</p>}
+            {formData.coverLink && !isUploading && (
               <img
                 src={formData.coverLink}
                 alt="Preview Cover"
-                className="mt-3 h-32 w-full object-cover rounded-md border"
+                className="mt-3 h-32 w-full object-cover rounded-md border shadow-sm"
               />
             )}
           </div>
@@ -148,9 +160,10 @@ const EditWrittenWorkModal: React.FC<EditWrittenWorkModalProps> = ({ work, onClo
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors"
+              disabled={isUploading}
+              className="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Simpan Perubahan
+              {isUploading ? 'Mengupload...' : 'Simpan Perubahan'}
             </button>
           </div>
         </form>

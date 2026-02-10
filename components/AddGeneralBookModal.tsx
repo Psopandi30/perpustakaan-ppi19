@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { GeneralBook } from '../types';
-import { readFileAsDataURL, isSupportedImage } from '../utils/file';
+import { isSupportedImage } from '../utils/file';
+import * as db from '../db';
 import { XIcon } from './icons/Icons';
 
 interface AddGeneralBookModalProps {
@@ -18,6 +19,7 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
     isFeatured: false,
   });
   const [error, setError] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,6 +29,7 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isUploading) return;
     if (Object.values(formData).some(val => typeof val === 'string' && val.trim() === '')) {
       setError('Semua kolom wajib diisi.');
       return;
@@ -49,15 +52,22 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
       e.target.value = '';
       return;
     }
+
+    setIsUploading(true);
+    setError(null);
+
     try {
-      const dataUrl = await readFileAsDataURL(file);
-      setFormData(prev => ({ ...prev, coverLink: dataUrl }));
-      setError(null);
-    } catch (err) {
-      if (process.env.NODE_ENV === 'development') {
-        console.error('Error reading cover file:', err);
+      const imageUrl = await db.uploadFile(file, 'covers');
+      if (imageUrl) {
+        setFormData(prev => ({ ...prev, coverLink: imageUrl }));
+      } else {
+        setError('Gagal mengupload cover.');
       }
-      setError('Gagal membaca file cover.');
+    } catch (err) {
+      console.error('Error uploading cover:', err);
+      setError('Terjadi kesalahan saat upload.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -98,13 +108,15 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
               type="file"
               accept="image/png,image/jpeg"
               onChange={handleCoverChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal"
+              disabled={isUploading}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-dark-teal disabled:opacity-50"
             />
-            {formData.coverLink && (
+            {isUploading && <p className="text-xs text-teal-600 mt-1 animate-pulse font-medium">Sedang mengupload...</p>}
+            {formData.coverLink && !isUploading && (
               <img
                 src={formData.coverLink}
                 alt="Preview Cover"
-                className="mt-3 h-32 w-full object-cover rounded-md border"
+                className="mt-3 h-32 w-full object-cover rounded-md border shadow-sm"
               />
             )}
           </div>
@@ -139,9 +151,10 @@ const AddGeneralBookModal: React.FC<AddGeneralBookModalProps> = ({ onClose, onSa
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors"
+              disabled={isUploading}
+              className="px-4 py-2 bg-green-600 text-white font-semibold rounded-md hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
             >
-              Simpan
+              {isUploading ? 'Mengupload...' : 'Simpan'}
             </button>
           </div>
         </form>

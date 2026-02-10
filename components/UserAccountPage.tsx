@@ -14,6 +14,7 @@ interface UserAccountPageProps {
 const UserAccountPage: React.FC<UserAccountPageProps> = ({ user, onLogout, onNavigate, onUpdateUser }) => {
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const dataFields = [
         { label: 'ID User', value: `USER-00${user.id}` },
@@ -31,30 +32,39 @@ const UserAccountPage: React.FC<UserAccountPageProps> = ({ user, onLogout, onNav
             e.target.value = '';
             return;
         }
-        if (file.size > 200 * 1024) {
-            setError('Ukuran foto terlalu besar. Maksimal 200KB.');
+        // Increase limit to 2MB for storage
+        if (file.size > 2000 * 1024) {
+            setError('Ukuran foto terlalu besar. Maksimal 2MB.');
             e.target.value = '';
             return;
         }
-        try {
-            const dataUrl = await readFileAsDataURL(file);
-            const updatedUser = { ...user, photo: dataUrl };
 
-            // Persist to DB
-            const success = await db.updateUser(updatedUser);
-            if (success) {
-                onUpdateUser(updatedUser);
-                setError(null);
-                setSuccess('Foto berhasil diubah!');
-                setTimeout(() => setSuccess(null), 3000);
+        setIsUploading(true);
+        setError(null);
+        setSuccess(null);
+
+        try {
+            const imageUrl = await db.uploadFile(file, 'avatars');
+            if (imageUrl) {
+                const updatedUser = { ...user, photo: imageUrl };
+
+                // Persist to DB
+                const success = await db.updateUser(updatedUser);
+                if (success) {
+                    onUpdateUser(updatedUser);
+                    setSuccess('Foto berhasil diubah!');
+                    setTimeout(() => setSuccess(null), 3000);
+                } else {
+                    setError('Gagal menyimpan perubahan foto ke database.');
+                }
             } else {
-                setError('Gagal menyimpan perubahan foto ke database.');
+                setError('Gagal mengupload foto.');
             }
         } catch (err) {
-            if (process.env.NODE_ENV === 'development') {
-                console.error('Error reading photo file:', err);
-            }
-            setError('Gagal membaca file foto.');
+            console.error('Error uploading photo:', err);
+            setError('Terjadi kesalahan saat upload.');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -100,6 +110,7 @@ const UserAccountPage: React.FC<UserAccountPageProps> = ({ user, onLogout, onNav
                                         type="file"
                                         accept="image/png,image/jpeg"
                                         onChange={handlePhotoChange}
+                                        disabled={isUploading}
                                         className="hidden"
                                     />
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,6 +119,9 @@ const UserAccountPage: React.FC<UserAccountPageProps> = ({ user, onLogout, onNav
                                     </svg>
                                 </label>
                             </div>
+                            {isUploading && (
+                                <p className="mt-2 text-xs text-teal-600 animate-pulse text-center font-medium">Mengupload...</p>
+                            )}
                             {error && (
                                 <p className="mt-2 text-sm text-red-500 text-center">{error}</p>
                             )}

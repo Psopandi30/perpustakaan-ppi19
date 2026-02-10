@@ -120,6 +120,40 @@ const setLocalItem = <T>(key: string, data: T) => {
 
 const generateId = () => Date.now() + Math.floor(Math.random() * 1000);
 
+export const uploadFile = async (file: File, bucket: 'uploads' | 'covers' | 'documents' | 'avatars' = 'uploads'): Promise<string | null> => {
+    if (!supabase) {
+        // Local mode fallback: return data URL as before or mock URL
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+            .from(bucket)
+            .upload(filePath, file);
+
+        if (uploadError) {
+            console.error('Error uploading file:', uploadError);
+            return null;
+        }
+
+        const { data } = supabase.storage
+            .from(bucket)
+            .getPublicUrl(filePath);
+
+        return data.publicUrl;
+    } catch (error) {
+        console.error('Upload catch error:', error);
+        return null;
+    }
+};
 
 // --- Users ---
 export const fetchUsers = async (): Promise<User[]> => {
