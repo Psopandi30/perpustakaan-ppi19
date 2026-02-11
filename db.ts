@@ -924,8 +924,7 @@ export const fetchArticles = async (limit?: number): Promise<Article[]> => {
         judul: a.judul,
         konten: a.konten,
         tanggalTerbit: a.tanggal_terbit,
-        imageUrl: a.image_url,
-        namaPenulis: a.nama_penulis
+        imageUrl: a.image_url
     }));
 };
 
@@ -942,8 +941,7 @@ export const addArticle = async (article: Omit<Article, 'id'>): Promise<Article 
         judul: article.judul,
         konten: article.konten || null,
         tanggal_terbit: article.tanggalTerbit,
-        image_url: article.imageUrl || null,
-        nama_penulis: article.namaPenulis || null
+        image_url: article.imageUrl || null
     };
     const { data, error } = await supabase.from('articles').insert(dbArticle as any).select().single();
     if (error) {
@@ -956,8 +954,7 @@ export const addArticle = async (article: Omit<Article, 'id'>): Promise<Article 
         judul: a.judul,
         konten: a.konten,
         tanggalTerbit: a.tanggal_terbit,
-        imageUrl: a.image_url,
-        namaPenulis: a.nama_penulis
+        imageUrl: a.image_url
     };
 };
 
@@ -977,8 +974,7 @@ export const updateArticle = async (article: Article): Promise<boolean> => {
         judul: article.judul,
         konten: article.konten || null,
         tanggal_terbit: article.tanggalTerbit,
-        image_url: article.imageUrl || null,
-        nama_penulis: article.namaPenulis || null
+        image_url: article.imageUrl || null
     };
     // @ts-expect-error - Supabase update type inference issue with mapped types
     const { error } = await supabase.from('articles').update(dbArticle as any).eq('id', article.id);
